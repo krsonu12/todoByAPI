@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:todo_app_task/core/network/api_paths.dart';
 
+import 'user_model.dart';
+
 class AuthService {
   AuthService({required this.client});
 
@@ -39,6 +41,19 @@ class AuthService {
     throw DioException(
       requestOptions: response.requestOptions,
       message: 'Token missing in login response',
+    );
+  }
+
+  Future<UserModel> fetchUser(int id) async {
+    final Response<dynamic> response = await client.get('/users/$id');
+    final dynamic data = response.data;
+    final dynamic payload = (data is Map) ? data['data'] : null;
+    if (payload is Map<String, dynamic>) {
+      return UserModel.fromJson(payload);
+    }
+    throw DioException(
+      requestOptions: response.requestOptions,
+      message: 'Invalid user response',
     );
   }
 }
