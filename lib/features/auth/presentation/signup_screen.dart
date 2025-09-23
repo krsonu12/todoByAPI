@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
-import '../../todo_screens/home/presentation/home_screen.dart';
 import 'controllers/auth_controller.dart';
 
 class SignupScreen extends ConsumerStatefulWidget {
@@ -70,13 +70,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                             );
                         if (!mounted) return;
                         final current = ref.read(authControllerProvider);
-                        if (current is! AsyncError) {
-                          Navigator.of(context).pushReplacement(
-                            MaterialPageRoute<void>(
-                              builder: (_) => const HomeScreen(),
-                            ),
-                          );
-                        }
+                        if (current is! AsyncError) context.go('/home');
                       },
                 child: state is AsyncLoading
                     ? const SizedBox(
