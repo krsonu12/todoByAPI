@@ -4,7 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:todo_app_task/core/network/api_paths.dart';
 
 import '../data/userModel/user_model.dart';
-import 'models/auth_result.dart';
+import '../data/models/auth_result.dart';
 
 class AuthService {
   AuthService({required this.client});

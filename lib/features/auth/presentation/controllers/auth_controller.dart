@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/auth/auth_token_provider.dart';
+import '../../../../core/auth/token_storage.dart';
 import '../../domain/providers/auth_providers.dart';
 
 class AuthController extends StateNotifier<AsyncValue<void>> {
@@ -9,7 +10,7 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
   final Ref ref;
 
   Future<void> register({
-   String? username,
+    String? username,
     required String email,
     required String password,
   }) async {
@@ -19,6 +20,7 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
           .read(authServiceProvider)
           .register(username: username, email: email, password: password);
       ref.read(authTokenProvider.notifier).state = result.token;
+      await ref.read(tokenStorageProvider).writeToken(result.token);
       state = const AsyncData(null);
     } catch (err, st) {
       state = AsyncError(err, st);
@@ -32,6 +34,7 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
           .read(authServiceProvider)
           .login(email: email, password: password);
       ref.read(authTokenProvider.notifier).state = result.token;
+      await ref.read(tokenStorageProvider).writeToken(result.token);
       state = const AsyncData(null);
     } catch (err, st) {
       state = AsyncError(err, st);
