@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../todo_screens/home/presentation/home_screen.dart';
 import 'controllers/auth_controller.dart';
 
 class SignupScreen extends ConsumerStatefulWidget {
@@ -40,7 +41,6 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
               TextFormField(
                 controller: _usernameCtrl,
                 decoration: const InputDecoration(labelText: 'Username'),
-           
               ),
               const SizedBox(height: 12),
               TextFormField(
@@ -68,9 +68,13 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                               email: _emailCtrl.text.trim(),
                               password: _passwordCtrl.text,
                             );
-                        if (mounted && state is! AsyncError) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Registered')),
+                        if (!mounted) return;
+                        final current = ref.read(authControllerProvider);
+                        if (current is! AsyncError) {
+                          Navigator.of(context).pushReplacement(
+                            MaterialPageRoute<void>(
+                              builder: (_) => const HomeScreen(),
+                            ),
                           );
                         }
                       },

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../todo_screens/home/presentation/home_screen.dart';
 import 'controllers/auth_controller.dart';
 
 class SigninScreen extends ConsumerStatefulWidget {
@@ -59,9 +60,13 @@ class _SigninScreenState extends ConsumerState<SigninScreen> {
                               email: _emailCtrl.text.trim(),
                               password: _passwordCtrl.text,
                             );
-                        if (mounted && state is! AsyncError) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Signed in')),
+                        if (!mounted) return;
+                        final current = ref.read(authControllerProvider);
+                        if (current is! AsyncError) {
+                          Navigator.of(context).pushReplacement(
+                            MaterialPageRoute<void>(
+                              builder: (_) => const HomeScreen(),
+                            ),
                           );
                         }
                       },
