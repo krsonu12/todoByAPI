@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:todo_app_task/core/network/api_paths.dart';
 
 class AuthService {
   AuthService({required this.client});
@@ -10,7 +11,7 @@ class AuthService {
     required String password,
   }) async {
     final Response<dynamic> response = await client.post(
-      '/register',
+      ApiPaths.register,
       data: <String, dynamic>{'email': email, 'password': password},
     );
     final dynamic data = response.data;
@@ -28,7 +29,7 @@ class AuthService {
     required String password,
   }) async {
     final Response<dynamic> response = await client.post(
-      '/login',
+      ApiPaths.login,
       data: <String, dynamic>{'email': email, 'password': password},
     );
     final dynamic data = response.data;
