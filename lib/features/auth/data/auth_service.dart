@@ -9,12 +9,17 @@ class AuthService {
   final Dio client;
 
   Future<String> register({
+    required String username,
     required String email,
     required String password,
   }) async {
     final Response<dynamic> response = await client.post(
       ApiPaths.register,
-      data: <String, dynamic>{'email': email, 'password': password},
+      data: <String, dynamic>{
+        'username': username,
+        'email': email,
+        'password': password,
+      },
     );
     final dynamic data = response.data;
     if (data is Map && data['token'] is String) {
