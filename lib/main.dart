@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:todo_app_task/features/auth/presentation/signup_screen.dart';
 
 void main() {
   runApp(const ProviderScope(child: MyApp()));
@@ -11,6 +12,6 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(title: 'Flutter Demo', home: const Placeholder());
+    return MaterialApp(title: 'Todo App', home: const SignupScreen());
   }
 }
