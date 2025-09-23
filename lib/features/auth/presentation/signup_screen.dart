@@ -40,7 +40,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
               TextFormField(
                 controller: _usernameCtrl,
                 decoration: const InputDecoration(labelText: 'Username'),
-                validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
+           
               ),
               const SizedBox(height: 12),
               TextFormField(

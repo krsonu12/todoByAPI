@@ -1,15 +1,18 @@
+import 'dart:developer';
+
 import 'package:dio/dio.dart';
 import 'package:todo_app_task/core/network/api_paths.dart';
 
 import '../data/userModel/user_model.dart';
+import 'models/auth_result.dart';
 
 class AuthService {
   AuthService({required this.client});
 
   final Dio client;
 
-  Future<String> register({
-    required String username,
+  Future<AuthResult> register({
+    String? username,
     required String email,
     required String password,
   }) async {
@@ -22,8 +25,12 @@ class AuthService {
       },
     );
     final dynamic data = response.data;
+    log(response.data.toString());
     if (data is Map && data['token'] is String) {
-      return data['token'] as String;
+      return AuthResult(
+        id: (data['id'] is int) ? data['id'] as int : null,
+        token: data['token'] as String,
+      );
     }
     throw DioException(
       requestOptions: response.requestOptions,
@@ -31,7 +38,7 @@ class AuthService {
     );
   }
 
-  Future<String> login({
+  Future<AuthResult> login({
     required String email,
     required String password,
   }) async {
@@ -41,7 +48,7 @@ class AuthService {
     );
     final dynamic data = response.data;
     if (data is Map && data['token'] is String) {
-      return data['token'] as String;
+      return AuthResult(token: data['token'] as String);
     }
     throw DioException(
       requestOptions: response.requestOptions,

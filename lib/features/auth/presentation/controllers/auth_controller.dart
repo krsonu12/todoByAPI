@@ -9,16 +9,16 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
   final Ref ref;
 
   Future<void> register({
-    required String username,
+   String? username,
     required String email,
     required String password,
   }) async {
     state = const AsyncLoading();
     try {
-      final token = await ref
+      final result = await ref
           .read(authServiceProvider)
           .register(username: username, email: email, password: password);
-      ref.read(authTokenProvider.notifier).state = token;
+      ref.read(authTokenProvider.notifier).state = result.token;
       state = const AsyncData(null);
     } catch (err, st) {
       state = AsyncError(err, st);
@@ -28,10 +28,10 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
   Future<void> login({required String email, required String password}) async {
     state = const AsyncLoading();
     try {
-      final token = await ref
+      final result = await ref
           .read(authServiceProvider)
           .login(email: email, password: password);
-      ref.read(authTokenProvider.notifier).state = token;
+      ref.read(authTokenProvider.notifier).state = result.token;
       state = const AsyncData(null);
     } catch (err, st) {
       state = AsyncError(err, st);
