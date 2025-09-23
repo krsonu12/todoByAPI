@@ -14,13 +14,22 @@ class NetworkClient {
     required void Function() onLogout,
   }) {
     final Dio unauthenticatedClient = Dio(
-      BaseOptions(baseUrl: ApiPaths.baseUrl),
+      BaseOptions(
+        baseUrl: ApiPaths.baseUrl,
+        headers: <String, dynamic>{'x-api-key': 'reqres-free-v1'},
+      ),
     );
 
-    final Dio authenticatedClient = Dio(BaseOptions(baseUrl: ApiPaths.baseUrl))
-      ..interceptors.add(
-        AuthInterceptor(getToken: getToken, onLogout: onLogout),
-      );
+    final Dio authenticatedClient =
+        Dio(
+            BaseOptions(
+              baseUrl: ApiPaths.baseUrl,
+              headers: <String, dynamic>{'x-api-key': 'reqres-free-v1'},
+            ),
+          )
+          ..interceptors.add(
+            AuthInterceptor(getToken: getToken, onLogout: onLogout),
+          );
 
     return NetworkClient._internal(
       unauthenticatedClient: unauthenticatedClient,
