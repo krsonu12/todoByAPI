@@ -4,9 +4,10 @@ import 'token_storage.dart';
 
 final authTokenProvider = StateProvider<String?>((ref) => null);
 
-final logoutCallbackProvider = Provider<void Function()>((ref) {
+final logoutCallbackProvider = Provider<Future<void> Function()>((ref) {
   return () async {
     ref.read(authTokenProvider.notifier).state = null;
-    await ref.read(tokenStorageProvider).clearToken();
+    final storage = await ref.read(tokenStorageProvider.future);
+    await storage.clearToken();
   };
 });

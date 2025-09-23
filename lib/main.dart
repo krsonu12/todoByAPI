@@ -18,11 +18,16 @@ class MyApp extends ConsumerWidget {
     final prefs = ref.watch(sharedPrefsProvider);
     return prefs.when(
       data: (_) {
-        // Preload token from storage once
-        final token = ref.read(tokenStorageProvider).readToken();
-        if (token != null && token.isNotEmpty) {
-          ref.read(authTokenProvider.notifier).state = token;
-        }
+        // Preload token from storage once using async provider
+        ref.listen(tokenStorageProvider, (previous, next) async {
+          if (next.hasValue) {
+            final storage = next.value!;
+            final token = storage.readToken();
+            if (token != null && token.isNotEmpty) {
+              ref.read(authTokenProvider.notifier).state = token;
+            }
+          }
+        });
         final router = ref.watch(routerProvider);
         return MaterialApp.router(title: 'Todo App', routerConfig: router);
       },

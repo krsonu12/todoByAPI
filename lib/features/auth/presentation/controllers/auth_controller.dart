@@ -20,7 +20,8 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
           .read(authServiceProvider)
           .register(username: username, email: email, password: password);
       ref.read(authTokenProvider.notifier).state = result.token;
-      await ref.read(tokenStorageProvider).writeToken(result.token);
+      final storage = await ref.read(tokenStorageProvider.future);
+      await storage.writeToken(result.token);
       state = const AsyncData(null);
     } catch (err, st) {
       state = AsyncError(err, st);
@@ -34,7 +35,8 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
           .read(authServiceProvider)
           .login(email: email, password: password);
       ref.read(authTokenProvider.notifier).state = result.token;
-      await ref.read(tokenStorageProvider).writeToken(result.token);
+      final storage = await ref.read(tokenStorageProvider.future);
+      await storage.writeToken(result.token);
       state = const AsyncData(null);
     } catch (err, st) {
       state = AsyncError(err, st);

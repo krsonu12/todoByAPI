@@ -23,12 +23,7 @@ final sharedPrefsProvider = FutureProvider<SharedPreferences>((ref) async {
   return SharedPreferences.getInstance();
 });
 
-final tokenStorageProvider = Provider<TokenStorage>((ref) {
-  final prefs = ref
-      .watch(sharedPrefsProvider)
-      .maybeWhen(data: (p) => p, orElse: () => null);
-  if (prefs == null) {
-    throw StateError('SharedPreferences not ready');
-  }
+final tokenStorageProvider = FutureProvider<TokenStorage>((ref) async {
+  final prefs = await ref.watch(sharedPrefsProvider.future);
   return TokenStorage(prefs);
 });
