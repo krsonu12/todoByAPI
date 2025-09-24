@@ -6,6 +6,7 @@ import '../../../todo_module/data/todo_model.dart';
 import '../../../todo_module/presentations/todo_controller/todo_controller.dart';
 import '../../data/task_extras.dart';
 import '../../data/task_extras_dao.dart';
+import '../../domain/users_repository.dart';
 import 'task_edit_sheet.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -129,10 +130,11 @@ class HomeScreen extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
+          final users = await ref.read(usersRepositoryProvider).getUsers();
           final result = await showModalBottomSheet<TaskFormResult>(
             context: context,
             isScrollControlled: true,
-            builder: (context) => const TaskEditSheet(),
+            builder: (context) => TaskEditSheet(prefetchedUsers: users),
           );
           if (result != null && result.title.isNotEmpty) {
             final todo = TodoModel(
@@ -228,11 +230,14 @@ class TodoTile extends ConsumerWidget {
             },
           ),
           onTap: () async {
+            final users = await ref.read(usersRepositoryProvider).getUsers();
             final result = await showModalBottomSheet<TaskFormResult>(
               context: context,
               isScrollControlled: true,
-              builder: (context) =>
-                  TaskEditSheet(initial: TaskFormResult(title: todo.title)),
+              builder: (context) => TaskEditSheet(
+                initial: TaskFormResult(title: todo.title),
+                prefetchedUsers: users,
+              ),
             );
             if (result != null) {
               if (result.title.isNotEmpty && result.title != todo.title) {

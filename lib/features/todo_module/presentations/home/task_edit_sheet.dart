@@ -25,8 +25,9 @@ class TaskFormResult {
 }
 
 class TaskEditSheet extends ConsumerStatefulWidget {
-  const TaskEditSheet({super.key, this.initial});
+  const TaskEditSheet({super.key, this.initial, this.prefetchedUsers});
   final TaskFormResult? initial;
+  final List<AppUser>? prefetchedUsers;
 
   @override
   ConsumerState<TaskEditSheet> createState() => _TaskEditSheetState();
@@ -172,6 +173,7 @@ class _TaskEditSheetState extends ConsumerState<TaskEditSheet> {
                     _UsersDropdown(
                       initial: _assigned,
                       onChanged: (u) => setState(() => _assigned = u),
+                      prefetched: widget.prefetchedUsers,
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton(
@@ -258,12 +260,37 @@ class _DateField extends StatelessWidget {
 }
 
 class _UsersDropdown extends ConsumerWidget {
-  const _UsersDropdown({required this.onChanged, this.initial});
+  const _UsersDropdown({
+    required this.onChanged,
+    this.initial,
+    this.prefetched,
+  });
   final ValueChanged<AppUser?> onChanged;
   final AppUser? initial;
+  final List<AppUser>? prefetched;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (prefetched != null) {
+      final items = prefetched!
+          .map((u) => DropdownMenuItem<AppUser>(value: u, child: Text(u.name)))
+          .toList();
+      final value = initial == null
+          ? null
+          : prefetched!.firstWhere(
+              (u) => u.id == initial!.id,
+              orElse: () => initial!,
+            );
+      return DropdownButtonFormField<AppUser>(
+        initialValue: value,
+        items: items,
+        onChanged: onChanged,
+        decoration: const InputDecoration(
+          labelText: 'Assigned User',
+          border: OutlineInputBorder(),
+        ),
+      );
+    }
     return FutureBuilder<List<AppUser>>(
       future: ref.read(usersRepositoryProvider).getUsers(),
       builder: (context, snap) {
