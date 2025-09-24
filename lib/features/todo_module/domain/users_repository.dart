@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -16,6 +18,7 @@ class UsersRepository {
 
   Future<List<AppUser>> getUsers() async {
     final Response<dynamic> res = await client.get('$_base/users');
+    log("user data: ${res.data.toString()}");
     final dynamic root = res.data;
     if (root is Map<String, dynamic>) {
       final dynamic list = root['data'];

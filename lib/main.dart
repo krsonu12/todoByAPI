@@ -5,7 +5,8 @@ import 'core/auth/auth_token_provider.dart';
 import 'core/auth/token_storage.dart';
 import 'core/router/app_router.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const ProviderScope(child: MyApp()));
 }
 

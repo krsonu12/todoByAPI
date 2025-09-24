@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
 class TaskLocalDb {
@@ -23,8 +22,8 @@ class TaskLocalDb {
   }
 
   Future<Database> _openDb() async {
-    final dir = await getApplicationDocumentsDirectory();
-    final path = p.join(dir.path, _dbName);
+    final dbDir = await getDatabasesPath();
+    final path = p.join(dbDir, _dbName);
     return openDatabase(
       path,
       version: _dbVersion,
