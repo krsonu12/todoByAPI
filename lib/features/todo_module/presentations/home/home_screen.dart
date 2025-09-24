@@ -36,30 +36,8 @@ class HomeScreen extends ConsumerWidget {
               separatorBuilder: (_, __) => const Divider(height: 1),
               itemBuilder: (context, index) {
                 final TodoModel t = todos[index];
-                return ListTile(
-                  title: Text(t.title),
-                  leading: Checkbox(
-                    value: t.completed,
-                    onChanged: (val) {
-                      ref
-                          .read(todoControllerProvider.notifier)
-                          .updateTodo(
-                            t.id ?? index,
-                            t.copyWith(completed: val ?? false),
-                          );
-                    },
-                  ),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: () {
-                      if (t.id != null) {
-                        ref
-                            .read(todoControllerProvider.notifier)
-                            .deleteTodo(t.id!);
-                      }
-                    },
-                  ),
-                );
+                final int itemId = t.id ?? index;
+                return TodoTile(id: itemId);
               },
             ),
           );
@@ -100,6 +78,52 @@ class HomeScreen extends ConsumerWidget {
         },
         child: const Icon(Icons.add),
       ),
+    );
+  }
+}
+
+class TodoTile extends ConsumerWidget {
+  const TodoTile({super.key, required this.id});
+
+  final int id;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final asyncItem = ref.watch(
+      todoControllerProvider.select((state) {
+        return state.whenData((todos) {
+          for (final t in todos) {
+            if ((t.id ?? -1) == id) return t;
+          }
+          return null;
+        });
+      }),
+    );
+
+    return asyncItem.when(
+      data: (todo) {
+        if (todo == null) return const SizedBox.shrink();
+        return ListTile(
+          key: ValueKey<int>(id),
+          title: Text(todo.title),
+          leading: Checkbox(
+            value: todo.completed,
+            onChanged: (val) {
+              ref
+                  .read(todoControllerProvider.notifier)
+                  .updateTodo(id, todo.copyWith(completed: val ?? false));
+            },
+          ),
+          trailing: IconButton(
+            icon: const Icon(Icons.delete, color: Colors.red),
+            onPressed: () {
+              ref.read(todoControllerProvider.notifier).deleteTodo(id);
+            },
+          ),
+        );
+      },
+      loading: () => const ListTile(title: Text('...')),
+      error: (e, _) => ListTile(title: Text('Error: $e')),
     );
   }
 }
