@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../../todo_module/data/todo_model.dart';
-import '../../../todo_module/domain/todo_provider.dart';
+import '../../../todo_module/presentations/todo_controller/todo_controller.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
