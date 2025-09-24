@@ -42,7 +42,22 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
       state = AsyncError(err, st);
     }
   }
+
+  Future<void> logout() async {
+    state = const AsyncLoading();
+    try {
+      await ref.read(authServiceProvider).logout();
+      state = const AsyncData(null);
+      final storage = await ref.read(tokenStorageProvider.future);
+      await storage.clearToken();
+      ref.read(authTokenProvider.notifier).state = null;
+    } catch (err, st) {
+      state = AsyncError(err, st);
+    }
+  }
 }
+
+
 
 final authControllerProvider =
     StateNotifierProvider<AuthController, AsyncValue<void>>((ref) {

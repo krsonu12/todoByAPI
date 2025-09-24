@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/auth/auth_token_provider.dart';
 import '../../features/auth/presentation/signin_screen.dart';
 import '../../features/auth/presentation/signup_screen.dart';
-import '../../features/todo_screens/home/home_screen.dart';
+import '../../features/todo_module/presentations/home/home_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final String? token = ref.watch(authTokenProvider);

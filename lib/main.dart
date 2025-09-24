@@ -12,13 +12,11 @@ void main() {
 class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final prefs = ref.watch(sharedPrefsProvider);
     return prefs.when(
       data: (_) {
-        // Preload token from storage once using async provider
         ref.listen(tokenStorageProvider, (previous, next) async {
           if (next.hasValue) {
             final storage = next.value!;
