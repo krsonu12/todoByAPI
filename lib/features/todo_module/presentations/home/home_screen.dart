@@ -4,6 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../../todo_module/data/todo_model.dart';
 import '../../../todo_module/presentations/todo_controller/todo_controller.dart';
+import '../../data/task_extras.dart';
+import '../../data/task_extras_dao.dart';
+import 'task_edit_sheet.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -55,54 +58,69 @@ class HomeScreen extends ConsumerWidget {
           return RefreshIndicator(
             onRefresh: () =>
                 ref.read(todoControllerProvider.notifier).refresh(),
-            child: ListView.separated(
-              itemCount: todos.length,
-              separatorBuilder: (_, __) => const Divider(height: 1),
-              itemBuilder: (context, index) {
-                final TodoModel t = todos[index];
-                final int itemId = t.id ?? index;
-                return Dismissible(
-                  key: ValueKey<int>(itemId),
-                  direction: DismissDirection.endToStart,
-                  background: Container(
-                    alignment: Alignment.centerRight,
-                    color: Colors.red.withOpacity(0.1),
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: const Icon(Icons.delete, color: Colors.red),
-                  ),
-                  confirmDismiss: (_) async {
-                    return await showDialog<bool>(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: const Text('Delete todo?'),
-                            content: Text(
-                              'Are you sure you want to delete "${t.title}"?',
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context, false),
-                                child: const Text('Cancel'),
-                              ),
-                              ElevatedButton(
-                                onPressed: () => Navigator.pop(context, true),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red,
-                                ),
-                                child: const Text('Delete'),
-                              ),
-                            ],
-                          ),
-                        ) ??
-                        false;
-                  },
-                  onDismissed: (_) {
-                    ref
-                        .read(todoControllerProvider.notifier)
-                        .deleteTodo(itemId);
-                  },
-                  child: TodoTile(id: itemId, initialTitle: t.title),
-                );
+            child: NotificationListener<ScrollNotification>(
+              onNotification: (sn) {
+                if (sn.metrics.pixels >= sn.metrics.maxScrollExtent - 200) {
+                  ref.read(todoControllerProvider.notifier).loadMore();
+                }
+                return false;
               },
+              child: ListView.separated(
+                itemCount: todos.length + 1,
+                separatorBuilder: (_, __) => const Divider(height: 1),
+                itemBuilder: (context, index) {
+                  if (index == todos.length) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+                  final TodoModel t = todos[index];
+                  final int itemId = t.id ?? index;
+                  return Dismissible(
+                    key: ValueKey<int>(itemId),
+                    direction: DismissDirection.endToStart,
+                    background: Container(
+                      alignment: Alignment.centerRight,
+                      color: Colors.red.withOpacity(0.1),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: const Icon(Icons.delete, color: Colors.red),
+                    ),
+                    confirmDismiss: (_) async {
+                      return await showDialog<bool>(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text('Delete todo?'),
+                              content: Text(
+                                'Are you sure you want to delete "${t.title}"?',
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.pop(context, false),
+                                  child: const Text('Cancel'),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () => Navigator.pop(context, true),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.red,
+                                  ),
+                                  child: const Text('Delete'),
+                                ),
+                              ],
+                            ),
+                          ) ??
+                          false;
+                    },
+                    onDismissed: (_) {
+                      ref
+                          .read(todoControllerProvider.notifier)
+                          .deleteTodo(itemId);
+                    },
+                    child: TodoTile(id: itemId, initialTitle: t.title),
+                  );
+                },
+              ),
             ),
           );
         },
@@ -111,14 +129,38 @@ class HomeScreen extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          final title = await showModalBottomSheet<String>(
+          final result = await showModalBottomSheet<TaskFormResult>(
             context: context,
             isScrollControlled: true,
-            builder: (context) => TodoEditSheet(),
+            builder: (context) => const TaskEditSheet(),
           );
-          if (title != null && title.isNotEmpty) {
-            final todo = TodoModel(userId: 1, title: title, completed: false);
+          if (result != null && result.title.isNotEmpty) {
+            final todo = TodoModel(
+              userId: 1,
+              title: result.title,
+              completed: false,
+            );
             await ref.read(todoControllerProvider.notifier).addTodo(todo);
+            final list =
+                ref.read(todoControllerProvider).value ?? <TodoModel>[];
+            final created = list.firstWhere(
+              (tt) => tt.title == result.title,
+              orElse: () => todo,
+            );
+            final taskId = created.id ?? -1;
+            await ref
+                .read(taskExtrasDaoProvider)
+                .upsert(
+                  TaskExtras(
+                    taskId: taskId,
+                    description: result.description,
+                    dueDate: result.dueDate,
+                    priority: result.priority,
+                    status: result.status,
+                    assignedUserId: result.assignedUserId,
+                    assignedUserName: result.assignedUserName,
+                  ),
+                );
           }
         },
         child: const Icon(Icons.add),
@@ -152,6 +194,31 @@ class TodoTile extends ConsumerWidget {
         return ListTile(
           key: ValueKey<int>(id),
           title: Text(todo.title),
+          subtitle: FutureBuilder(
+            future: ref.read(taskExtrasDaoProvider).findByTaskId(id),
+            builder: (context, snap) {
+              final extras = snap.data;
+              if (extras == null) return const SizedBox.shrink();
+              final chips = <Widget>[];
+              if (extras.dueDate != null) {
+                chips.add(
+                  _Chip(icon: Icons.event, label: _fmtDate(extras.dueDate!)),
+                );
+              }
+              chips.add(
+                _Chip(icon: Icons.flag, label: _labelPriority(extras.priority)),
+              );
+              chips.add(
+                _Chip(icon: Icons.work, label: _labelStatus(extras.status)),
+              );
+              if (extras.assignedUserName != null) {
+                chips.add(
+                  _Chip(icon: Icons.person, label: extras.assignedUserName!),
+                );
+              }
+              return Wrap(spacing: 6, runSpacing: -8, children: chips);
+            },
+          ),
           leading: Checkbox(
             value: todo.completed,
             onChanged: (val) {
@@ -161,17 +228,31 @@ class TodoTile extends ConsumerWidget {
             },
           ),
           onTap: () async {
-            final updatedTitle = await showModalBottomSheet<String>(
+            final result = await showModalBottomSheet<TaskFormResult>(
               context: context,
               isScrollControlled: true,
-              builder: (context) => TodoEditSheet(initialTitle: todo.title),
+              builder: (context) =>
+                  TaskEditSheet(initial: TaskFormResult(title: todo.title)),
             );
-            if (updatedTitle != null &&
-                updatedTitle.isNotEmpty &&
-                updatedTitle != todo.title) {
-              ref
-                  .read(todoControllerProvider.notifier)
-                  .updateTodo(id, todo.copyWith(title: updatedTitle));
+            if (result != null) {
+              if (result.title.isNotEmpty && result.title != todo.title) {
+                ref
+                    .read(todoControllerProvider.notifier)
+                    .updateTodo(id, todo.copyWith(title: result.title));
+              }
+              await ref
+                  .read(taskExtrasDaoProvider)
+                  .upsert(
+                    TaskExtras(
+                      taskId: id,
+                      description: result.description,
+                      dueDate: result.dueDate,
+                      priority: result.priority,
+                      status: result.status,
+                      assignedUserId: result.assignedUserId,
+                      assignedUserName: result.assignedUserName,
+                    ),
+                  );
             }
           },
           trailing: IconButton(
@@ -187,6 +268,36 @@ class TodoTile extends ConsumerWidget {
     );
   }
 }
+
+class _Chip extends StatelessWidget {
+  const _Chip({required this.icon, required this.label});
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Chip(
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      labelPadding: const EdgeInsets.symmetric(horizontal: 6),
+      avatar: Icon(icon, size: 16),
+      label: Text(label),
+      visualDensity: VisualDensity.compact,
+    );
+  }
+}
+
+String _fmtDate(DateTime d) =>
+    '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+String _labelPriority(TaskPriority p) => {
+  TaskPriority.high: 'High',
+  TaskPriority.medium: 'Medium',
+  TaskPriority.low: 'Low',
+}[p]!;
+String _labelStatus(TaskStatus s) => {
+  TaskStatus.todo: 'To-Do',
+  TaskStatus.inProgress: 'In Progress',
+  TaskStatus.done: 'Done',
+}[s]!;
 
 class TodoEditSheet extends StatefulWidget {
   const TodoEditSheet({super.key, this.initialTitle});

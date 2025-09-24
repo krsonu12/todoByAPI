@@ -9,10 +9,17 @@ class TodoController extends StateNotifier<AsyncValue<List<TodoModel>>> {
   }
 
   final Ref ref;
+  static const int _pageSize = 20;
+  int _loaded = 0;
+  bool _hasMore = true;
 
   Future<void> _fetchAndSet() async {
     try {
-      final todos = await ref.read(todoRepositoryProvider).getTasks();
+      final todos = await ref
+          .read(todoRepositoryProvider)
+          .getTasksPaged(start: 0, limit: _pageSize);
+      _loaded = todos.length;
+      _hasMore = todos.length == _pageSize;
       state = AsyncData(todos);
     } catch (err, st) {
       state = AsyncError(err, st);
@@ -88,6 +95,21 @@ class TodoController extends StateNotifier<AsyncValue<List<TodoModel>>> {
       revert.insert(index, removed);
       _setData(revert);
       state = AsyncError(err, st);
+    }
+  }
+
+  Future<void> loadMore() async {
+    if (!_hasMore) return;
+    final current = List<TodoModel>.from(state.value ?? <TodoModel>[]);
+    try {
+      final next = await ref
+          .read(todoRepositoryProvider)
+          .getTasksPaged(start: _loaded, limit: _pageSize);
+      _loaded += next.length;
+      _hasMore = next.length == _pageSize;
+      _setData([...current, ...next]);
+    } catch (_) {
+      // ignore load more errors to avoid breaking the list
     }
   }
 }

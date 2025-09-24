@@ -20,6 +20,24 @@ class TodoRepository {
     return <TodoModel>[];
   }
 
+  Future<List<TodoModel>> getTasksPaged({
+    required int start,
+    required int limit,
+  }) async {
+    final Response<dynamic> response = await client.get(
+      '$_base/todos',
+      queryParameters: <String, dynamic>{'_start': start, '_limit': limit},
+    );
+    final dynamic data = response.data;
+    if (data is List) {
+      return data
+          .whereType<Map<String, dynamic>>()
+          .map<TodoModel>(TodoModel.fromJson)
+          .toList();
+    }
+    return <TodoModel>[];
+  }
+
   Future<TodoModel> createTask(TodoModel task) async {
     final Response<dynamic> response = await client.post(
       '$_base/todos',
