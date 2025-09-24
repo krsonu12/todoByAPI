@@ -16,20 +16,20 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/signin',
         name: 'signin',
-        builder: (BuildContext context, GoRouterState state) =>
-            const SigninScreen(),
+        pageBuilder: (context, state) =>
+            _fadePage(key: state.pageKey, child: const SigninScreen()),
       ),
       GoRoute(
         path: '/signup',
         name: 'signup',
-        builder: (BuildContext context, GoRouterState state) =>
-            const SignupScreen(),
+        pageBuilder: (context, state) =>
+            _fadePage(key: state.pageKey, child: const SignupScreen()),
       ),
       GoRoute(
         path: '/home',
         name: 'home',
-        builder: (BuildContext context, GoRouterState state) =>
-            const HomeScreen(),
+        pageBuilder: (context, state) =>
+            _fadePage(key: state.pageKey, child: const HomeScreen()),
       ),
     ],
     redirect: (BuildContext context, GoRouterState state) {
@@ -44,3 +44,20 @@ final routerProvider = Provider<GoRouter>((ref) {
     },
   );
 });
+
+CustomTransitionPage<void> _fadePage({
+  required LocalKey key,
+  required Widget child,
+}) {
+  return CustomTransitionPage<void>(
+    key: key,
+    child: child,
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      return FadeTransition(
+        opacity: CurvedAnimation(parent: animation, curve: Curves.easeInOut),
+        child: child,
+      );
+    },
+    barrierColor: null,
+  );
+}

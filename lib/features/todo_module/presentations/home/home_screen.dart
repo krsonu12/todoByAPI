@@ -67,6 +67,7 @@ class HomeScreen extends ConsumerWidget {
                 return false;
               },
               child: ListView.separated(
+                padding: const EdgeInsets.only(bottom: 96),
                 itemCount: todos.length + 1,
                 separatorBuilder: (_, __) => const Divider(height: 1),
                 itemBuilder: (context, index) {
@@ -118,7 +119,11 @@ class HomeScreen extends ConsumerWidget {
                           .read(todoControllerProvider.notifier)
                           .deleteTodo(itemId);
                     },
-                    child: TodoTile(id: itemId, initialTitle: t.title),
+                    child: AnimatedSize(
+                      duration: const Duration(milliseconds: 250),
+                      curve: Curves.easeInOut,
+                      child: TodoTile(id: itemId, initialTitle: t.title),
+                    ),
                   );
                 },
               ),
@@ -163,6 +168,13 @@ class HomeScreen extends ConsumerWidget {
                     assignedUserName: result.assignedUserName,
                   ),
                 );
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Created: ${result.title} • ${_labelPriority(result.priority)} • ${_labelStatus(result.status)}${result.assignedUserName != null ? ' • ${result.assignedUserName}' : ''}',
+                ),
+              ),
+            );
           }
         },
         child: const Icon(Icons.add),
@@ -193,78 +205,106 @@ class TodoTile extends ConsumerWidget {
     return asyncItem.when(
       data: (todo) {
         if (todo == null) return const SizedBox.shrink();
-        return ListTile(
-          key: ValueKey<int>(id),
-          title: Text(todo.title),
-          subtitle: FutureBuilder(
-            future: ref.read(taskExtrasDaoProvider).findByTaskId(id),
-            builder: (context, snap) {
-              final extras = snap.data;
-              if (extras == null) return const SizedBox.shrink();
-              final chips = <Widget>[];
-              if (extras.dueDate != null) {
-                chips.add(
-                  _Chip(icon: Icons.event, label: _fmtDate(extras.dueDate!)),
-                );
-              }
-              chips.add(
-                _Chip(icon: Icons.flag, label: _labelPriority(extras.priority)),
-              );
-              chips.add(
-                _Chip(icon: Icons.work, label: _labelStatus(extras.status)),
-              );
-              if (extras.assignedUserName != null) {
-                chips.add(
-                  _Chip(icon: Icons.person, label: extras.assignedUserName!),
-                );
-              }
-              return Wrap(spacing: 6, runSpacing: -8, children: chips);
-            },
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
           ),
-          leading: Checkbox(
-            value: todo.completed,
-            onChanged: (val) {
-              ref
-                  .read(todoControllerProvider.notifier)
-                  .updateTodo(id, todo.copyWith(completed: val ?? false));
-            },
-          ),
-          onTap: () async {
-            final users = await ref.read(usersRepositoryProvider).getUsers();
-            final result = await showModalBottomSheet<TaskFormResult>(
-              context: context,
-              isScrollControlled: true,
-              builder: (context) => TaskEditSheet(
-                initial: TaskFormResult(title: todo.title),
-                prefetchedUsers: users,
-              ),
-            );
-            if (result != null) {
-              if (result.title.isNotEmpty && result.title != todo.title) {
+          child: ListTile(
+            key: ValueKey<int>(id),
+            title: Text(todo.title),
+            subtitle: FutureBuilder(
+              future: ref.read(taskExtrasDaoProvider).findByTaskId(id),
+              builder: (context, snap) {
+                final extras = snap.data;
+                if (extras == null) return const SizedBox.shrink();
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (extras.description.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4.0, bottom: 6.0),
+                        child: Text(
+                          extras.description,
+                          style: Theme.of(context).textTheme.bodySmall,
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: -8,
+                      children: [
+                        if (extras.dueDate != null)
+                          _Chip(
+                            icon: Icons.event,
+                            label: _fmtDate(extras.dueDate!),
+                          ),
+                        _Chip(
+                          icon: Icons.flag,
+                          label: _labelPriority(extras.priority),
+                        ),
+                        _Chip(
+                          icon: Icons.work,
+                          label: _labelStatus(extras.status),
+                        ),
+                        if (extras.assignedUserName != null)
+                          _Chip(
+                            icon: Icons.person,
+                            label: extras.assignedUserName!,
+                          ),
+                      ],
+                    ),
+                  ],
+                );
+              },
+            ),
+            leading: Checkbox(
+              value: todo.completed,
+              onChanged: (val) {
                 ref
                     .read(todoControllerProvider.notifier)
-                    .updateTodo(id, todo.copyWith(title: result.title));
+                    .updateTodo(id, todo.copyWith(completed: val ?? false));
+              },
+            ),
+            onTap: () async {
+              final users = await ref.read(usersRepositoryProvider).getUsers();
+              final result = await showModalBottomSheet<TaskFormResult>(
+                context: context,
+                isScrollControlled: true,
+                builder: (context) => TaskEditSheet(
+                  initial: TaskFormResult(title: todo.title),
+                  prefetchedUsers: users,
+                ),
+              );
+              if (result != null) {
+                if (result.title.isNotEmpty && result.title != todo.title) {
+                  ref
+                      .read(todoControllerProvider.notifier)
+                      .updateTodo(id, todo.copyWith(title: result.title));
+                }
+                await ref
+                    .read(taskExtrasDaoProvider)
+                    .upsert(
+                      TaskExtras(
+                        taskId: id,
+                        description: result.description,
+                        dueDate: result.dueDate,
+                        priority: result.priority,
+                        status: result.status,
+                        assignedUserId: result.assignedUserId,
+                        assignedUserName: result.assignedUserName,
+                      ),
+                    );
               }
-              await ref
-                  .read(taskExtrasDaoProvider)
-                  .upsert(
-                    TaskExtras(
-                      taskId: id,
-                      description: result.description,
-                      dueDate: result.dueDate,
-                      priority: result.priority,
-                      status: result.status,
-                      assignedUserId: result.assignedUserId,
-                      assignedUserName: result.assignedUserName,
-                    ),
-                  );
-            }
-          },
-          trailing: IconButton(
-            icon: const Icon(Icons.delete, color: Colors.red),
-            onPressed: () {
-              ref.read(todoControllerProvider.notifier).deleteTodo(id);
             },
+            trailing: IconButton(
+              icon: const Icon(Icons.delete, color: Colors.red),
+              onPressed: () {
+                ref.read(todoControllerProvider.notifier).deleteTodo(id);
+              },
+            ),
           ),
         );
       },
