@@ -21,32 +21,72 @@ class TodoController extends StateNotifier<AsyncValue<List<TodoModel>>> {
 
   Future<void> refresh() async => _fetchAndSet();
 
+  void _setData(List<TodoModel> todos) {
+    state = AsyncData(List<TodoModel>.unmodifiable(todos));
+  }
+
   Future<void> addTodo(TodoModel newTodo) async {
-    state = const AsyncLoading();
+    final previous = state;
+    // optimistic: insert with temp negative id to avoid clashes
+    final tempId = DateTime.now().millisecondsSinceEpoch * -1;
+    final optimistic = newTodo.copyWith(id: tempId);
+    final current = state.value ?? <TodoModel>[];
+    _setData(<TodoModel>[optimistic, ...current]);
     try {
-      await ref.read(todoRepositoryProvider).createTask(newTodo);
-      await _fetchAndSet();
+      final created = await ref
+          .read(todoRepositoryProvider)
+          .createTask(newTodo);
+      final updatedList = state.value?.map((t) {
+        if ((t.id ?? tempId) == tempId) {
+          // keep server id if provided, otherwise keep optimistic
+          return t.copyWith(id: created.id ?? t.id);
+        }
+        return t;
+      }).toList();
+      if (updatedList != null) _setData(updatedList);
     } catch (err, st) {
+      state = previous; // revert
       state = AsyncError(err, st);
     }
   }
 
   Future<void> updateTodo(int id, TodoModel updatedTodo) async {
-    state = const AsyncLoading();
+    final previous = state;
+    final current = List<TodoModel>.from(state.value ?? <TodoModel>[]);
+    final index = current.indexWhere((t) => (t.id ?? -1) == id);
+    if (index == -1) return;
+    final old = current[index];
+    current[index] = updatedTodo.copyWith(id: id);
+    _setData(current);
     try {
       await ref.read(todoRepositoryProvider).updateTask(id, updatedTodo);
-      await _fetchAndSet();
     } catch (err, st) {
+      // revert
+      final revert = List<TodoModel>.from(state.value ?? <TodoModel>[]);
+      final idx = revert.indexWhere((t) => (t.id ?? -1) == id);
+      if (idx != -1) {
+        revert[idx] = old;
+        _setData(revert);
+      } else {
+        state = previous;
+      }
       state = AsyncError(err, st);
     }
   }
 
   Future<void> deleteTodo(int id) async {
-    state = const AsyncLoading();
+    final current = List<TodoModel>.from(state.value ?? <TodoModel>[]);
+    final index = current.indexWhere((t) => (t.id ?? -1) == id);
+    if (index == -1) return;
+    final removed = current.removeAt(index);
+    _setData(current);
     try {
       await ref.read(todoRepositoryProvider).deleteTask(id);
-      await _fetchAndSet();
     } catch (err, st) {
+      // revert the removal
+      final revert = List<TodoModel>.from(state.value ?? <TodoModel>[]);
+      revert.insert(index, removed);
+      _setData(revert);
       state = AsyncError(err, st);
     }
   }
