@@ -44,6 +44,8 @@ class TaskExtrasDao {
       'status': e.status.name,
       'assigned_user_id': e.assignedUserId,
       'assigned_user_name': e.assignedUserName,
+      'category': e.category,
+      'reminder_date': e.reminderDate?.millisecondsSinceEpoch,
     };
   }
 
@@ -64,6 +66,10 @@ class TaskExtrasDao {
       ),
       assignedUserId: row['assigned_user_id'] as int?,
       assignedUserName: row['assigned_user_name'] as String?,
+      category: row['category'] as String?,
+      reminderDate: (row['reminder_date'] as int?) != null
+          ? DateTime.fromMillisecondsSinceEpoch(row['reminder_date'] as int)
+          : null,
     );
   }
 }

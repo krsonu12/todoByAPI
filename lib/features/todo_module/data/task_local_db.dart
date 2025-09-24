@@ -9,7 +9,7 @@ class TaskLocalDb {
   static final TaskLocalDb instance = TaskLocalDb._();
 
   static const String _dbName = 'tasks.db';
-  static const int _dbVersion = 2;
+  static const int _dbVersion = 3;
 
   static const String tableExtras = 'task_extras';
   static const String tableFull = 'task_full';
@@ -37,7 +37,9 @@ class TaskLocalDb {
             priority TEXT NOT NULL,
             status TEXT NOT NULL,
             assigned_user_id INTEGER NULL,
-            assigned_user_name TEXT NULL
+            assigned_user_name TEXT NULL,
+            category TEXT NULL,
+            reminder_date INTEGER NULL
           );
         ''');
         await db.execute('''
@@ -50,7 +52,9 @@ class TaskLocalDb {
             priority TEXT NOT NULL,
             status TEXT NOT NULL,
             assigned_user_id INTEGER NULL,
-            assigned_user_name TEXT NULL
+            assigned_user_name TEXT NULL,
+            category TEXT NULL,
+            reminder_date INTEGER NULL
           );
         ''');
       },
@@ -66,9 +70,25 @@ class TaskLocalDb {
               priority TEXT NOT NULL,
               status TEXT NOT NULL,
               assigned_user_id INTEGER NULL,
-              assigned_user_name TEXT NULL
+              assigned_user_name TEXT NULL,
+              category TEXT NULL,
+              reminder_date INTEGER NULL
             );
           ''');
+        }
+        if (oldVersion < 3) {
+          await db.execute(
+            'ALTER TABLE $tableExtras ADD COLUMN category TEXT NULL',
+          );
+          await db.execute(
+            'ALTER TABLE $tableExtras ADD COLUMN reminder_date INTEGER NULL',
+          );
+          await db.execute(
+            'ALTER TABLE $tableFull ADD COLUMN category TEXT NULL',
+          );
+          await db.execute(
+            'ALTER TABLE $tableFull ADD COLUMN reminder_date INTEGER NULL',
+          );
         }
       },
     );
@@ -84,6 +104,8 @@ class TaskLocalDb {
     required String status,
     int? assignedUserId,
     String? assignedUserName,
+    String? category,
+    int? reminderDateMillis,
   }) async {
     final db = await database;
     await db.insert(tableFull, <String, Object?>{
@@ -96,6 +118,8 @@ class TaskLocalDb {
       'status': status,
       'assigned_user_id': assignedUserId,
       'assigned_user_name': assignedUserName,
+      'category': category,
+      'reminder_date': reminderDateMillis,
     }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 

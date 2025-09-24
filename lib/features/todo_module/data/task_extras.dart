@@ -11,6 +11,8 @@ class TaskExtras {
     this.status = TaskStatus.todo,
     this.assignedUserId,
     this.assignedUserName,
+    this.category,
+    this.reminderDate,
   });
 
   final int taskId;
@@ -20,6 +22,8 @@ class TaskExtras {
   final TaskStatus status;
   final int? assignedUserId;
   final String? assignedUserName;
+  final String? category;
+  final DateTime? reminderDate;
 
   TaskExtras copyWith({
     int? taskId,
@@ -29,6 +33,8 @@ class TaskExtras {
     TaskStatus? status,
     int? assignedUserId,
     String? assignedUserName,
+    String? category,
+    DateTime? reminderDate,
   }) {
     return TaskExtras(
       taskId: taskId ?? this.taskId,
@@ -38,6 +44,8 @@ class TaskExtras {
       status: status ?? this.status,
       assignedUserId: assignedUserId ?? this.assignedUserId,
       assignedUserName: assignedUserName ?? this.assignedUserName,
+      category: category ?? this.category,
+      reminderDate: reminderDate ?? this.reminderDate,
     );
   }
 }

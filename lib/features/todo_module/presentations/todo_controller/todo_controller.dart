@@ -1,7 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/task_extras.dart';
+import '../../data/task_extras_dao.dart' as dao;
+import '../../data/task_local_db.dart';
 import '../../data/todo_model.dart';
-import '../../domain/todo_provider.dart';
+import '../../domain/todo_provider.dart' hide taskExtrasDaoProvider;
 
 class TodoController extends StateNotifier<AsyncValue<List<TodoModel>>> {
   TodoController({required this.ref}) : super(const AsyncLoading()) {
@@ -51,6 +54,31 @@ class TodoController extends StateNotifier<AsyncValue<List<TodoModel>>> {
         return t;
       }).toList();
       if (updatedList != null) _setData(updatedList);
+      // migrate extras saved under tempId to real id and persist full row for UI
+      if (created.id != null) {
+        final extras = await ref
+            .read(dao.taskExtrasDaoProvider)
+            .findByTaskId(tempId);
+        if (extras != null) {
+          await ref
+              .read(dao.taskExtrasDaoProvider)
+              .upsert(extras.copyWith(taskId: created.id!));
+          await ref.read(dao.taskExtrasDaoProvider).deleteByTaskId(tempId);
+        }
+        await TaskLocalDb.instance.upsertFull(
+          taskId: created.id!,
+          title: created.title,
+          completed: created.completed,
+          description: extras?.description ?? '',
+          dueDateMillis: extras?.dueDate?.millisecondsSinceEpoch,
+          priority: (extras?.priority ?? TaskPriority.medium).name,
+          status: (extras?.status ?? TaskStatus.todo).name,
+          assignedUserId: extras?.assignedUserId,
+          assignedUserName: extras?.assignedUserName,
+          category: extras?.category,
+          reminderDateMillis: extras?.reminderDate?.millisecondsSinceEpoch,
+        );
+      }
     } catch (err, st) {
       state = previous; // revert
       state = AsyncError(err, st);
@@ -67,6 +95,21 @@ class TodoController extends StateNotifier<AsyncValue<List<TodoModel>>> {
     _setData(current);
     try {
       await ref.read(todoRepositoryProvider).updateTask(id, updatedTodo);
+      // persist full record locally with latest extras if any
+      final extras = await ref.read(dao.taskExtrasDaoProvider).findByTaskId(id);
+      await TaskLocalDb.instance.upsertFull(
+        taskId: id,
+        title: updatedTodo.title,
+        completed: updatedTodo.completed,
+        description: extras?.description ?? '',
+        dueDateMillis: extras?.dueDate?.millisecondsSinceEpoch,
+        priority: (extras?.priority ?? TaskPriority.medium).name,
+        status: (extras?.status ?? TaskStatus.todo).name,
+        assignedUserId: extras?.assignedUserId,
+        assignedUserName: extras?.assignedUserName,
+        category: extras?.category,
+        reminderDateMillis: extras?.reminderDate?.millisecondsSinceEpoch,
+      );
     } catch (err, st) {
       // revert
       final revert = List<TodoModel>.from(state.value ?? <TodoModel>[]);
@@ -89,6 +132,13 @@ class TodoController extends StateNotifier<AsyncValue<List<TodoModel>>> {
     _setData(current);
     try {
       await ref.read(todoRepositoryProvider).deleteTask(id);
+      // remove local persisted records
+      try {
+        await ref.read(dao.taskExtrasDaoProvider).deleteByTaskId(id);
+      } catch (_) {}
+      try {
+        await TaskLocalDb.instance.deleteFullById(id);
+      } catch (_) {}
     } catch (err, st) {
       // revert the removal
       final revert = List<TodoModel>.from(state.value ?? <TodoModel>[]);

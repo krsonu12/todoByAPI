@@ -228,9 +228,14 @@ class _TaskEditSheetState extends ConsumerState<TaskEditSheet> {
 }
 
 class _DateField extends StatelessWidget {
-  const _DateField({required this.value, required this.onPick});
+  const _DateField({
+    required this.value,
+    required this.onPick,
+    this.label = 'Due Date',
+  });
   final DateTime? value;
   final ValueChanged<DateTime?> onPick;
+  final String label;
 
   @override
   Widget build(BuildContext context) {
@@ -247,10 +252,21 @@ class _DateField extends StatelessWidget {
       },
       child: InputDecorator(
         decoration: const InputDecoration(
-          labelText: 'Due Date',
+          // labelText supplied below
           border: OutlineInputBorder(),
         ),
-        child: Text(value == null ? 'None' : _fmt(value!)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: Theme.of(context).inputDecorationTheme.labelStyle,
+            ),
+            const SizedBox(height: 6),
+            Text(value == null ? 'None' : _fmt(value!)),
+          ],
+        ),
       ),
     );
   }
