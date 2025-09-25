@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../todo_module/presentations/shared/design_system.dart';
 import 'controllers/auth_controller.dart';
+import 'widgets/auth_widgets.dart';
 
 class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({super.key});
@@ -31,89 +33,74 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     final state = ref.watch(authControllerProvider);
 
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF11998E), Color(0xFF38EF7D)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 420),
-              child: Card(
-                elevation: 8,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
+      backgroundColor: TodoDesignSystem.neutralGray50,
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(TodoDesignSystem.spacing24),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                
+                const AuthBrandHeader(),
+                const SizedBox(height: TodoDesignSystem.spacing12),
+                const AuthHighlights(),
+                const SizedBox(height: TodoDesignSystem.spacing16),
+                AuthCard(
+                  title: 'Create account',
+                  icon: Icons.person_add_alt_1_rounded,
                   child: Form(
                     key: _formKey,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const Text(
-                          'Create account',
+                        const SizedBox(height: TodoDesignSystem.spacing8),
+                        Text(
+                          'Join to manage your todos.',
                           textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w700,
+                          style: TodoDesignSystem.bodyMedium.copyWith(
+                            color: TodoDesignSystem.neutralGray600,
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Join to manage your todos',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.black54),
-                        ),
-                        const SizedBox(height: 24),
-                        TextFormField(
+                        const SizedBox(height: TodoDesignSystem.spacing24),
+                        AuthTextField(
                           controller: _usernameCtrl,
-                          decoration: const InputDecoration(
-                            labelText: 'Username',
-                            prefixIcon: Icon(Icons.person_outline),
-                            border: OutlineInputBorder(),
-                          ),
+                          label: 'Username',
+                          prefixIcon: Icons.person_outline,
                         ),
-                        const SizedBox(height: 12),
-                        TextFormField(
+                        const SizedBox(height: TodoDesignSystem.spacing12),
+                        AuthTextField(
                           controller: _emailCtrl,
+                          label: 'Email',
+                          hint: 'you@example.com',
+                          prefixIcon: Icons.email_outlined,
                           keyboardType: TextInputType.emailAddress,
-                          decoration: const InputDecoration(
-                            labelText: 'Email',
-                            prefixIcon: Icon(Icons.email_outlined),
-                            border: OutlineInputBorder(),
-                          ),
                           validator: (v) =>
                               (v == null || v.isEmpty) ? 'Required' : null,
                         ),
-                        const SizedBox(height: 12),
-                        TextFormField(
+                        const SizedBox(height: TodoDesignSystem.spacing12),
+                        AuthTextField(
                           controller: _passwordCtrl,
+                          label: 'Password',
+                          prefixIcon: Icons.lock_outline,
                           obscureText: _obscurePassword,
-                          decoration: InputDecoration(
-                            labelText: 'Password',
-                            prefixIcon: const Icon(Icons.lock_outline),
-                            border: const OutlineInputBorder(),
-                            suffixIcon: IconButton(
-                              onPressed: () => setState(
-                                () => _obscurePassword = !_obscurePassword,
-                              ),
-                              icon: Icon(
-                                _obscurePassword
-                                    ? Icons.visibility
-                                    : Icons.visibility_off,
-                              ),
+                          suffixIcon: IconButton(
+                            onPressed: () => setState(
+                              () => _obscurePassword = !_obscurePassword,
+                            ),
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
                             ),
                           ),
                           validator: (v) =>
                               (v == null || v.isEmpty) ? 'Required' : null,
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: TodoDesignSystem.spacing20),
                         SizedBox(
                           height: 48,
                           child: ElevatedButton(
@@ -137,9 +124,14 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                       context.go('/home');
                                   },
                             style: ElevatedButton.styleFrom(
+                              backgroundColor: TodoDesignSystem.primaryBlue,
+                              foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(
+                                  TodoDesignSystem.radiusMedium,
+                                ),
                               ),
+                              elevation: 0,
                             ),
                             child: state is AsyncLoading
                                 ? const SizedBox(
@@ -150,21 +142,33 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                       color: Colors.white,
                                     ),
                                   )
-                                : const Text('Create account'),
+                                : Text(
+                                    'Create account',
+                                    style: TodoDesignSystem.labelLarge.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
                           ),
                         ),
-                        const SizedBox(height: 12),
-                        if (state is AsyncError)
+                    if (state is AsyncError)
                           Text(
                             state.error.toString(),
-                            style: const TextStyle(color: Colors.red),
+                            style: TodoDesignSystem.bodySmall.copyWith(
+                              color: TodoDesignSystem.errorRed,
+                            ),
                             textAlign: TextAlign.center,
                           ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: TodoDesignSystem.spacing12),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Text('Already have an account? '),
+                            Text(
+                              'Already have an account? ',
+                              style: TodoDesignSystem.bodySmall.copyWith(
+                                color: TodoDesignSystem.neutralGray700,
+                              ),
+                            ),
                             TextButton(
                               onPressed: () => context.go('/signin'),
                               child: const Text('Sign in'),
@@ -175,7 +179,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     ),
                   ),
                 ),
-              ),
+              ],
             ),
           ),
         ),
