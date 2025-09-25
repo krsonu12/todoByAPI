@@ -361,11 +361,14 @@ class TodoTile extends ConsumerWidget {
                           left: TodoDesignSystem.spacing8,
                         ),
                         child: IconButton(
-                          onPressed: () {
+                          onPressed: () async {
                             HapticFeedback.lightImpact();
-                            ref
-                                .read(todoControllerProvider.notifier)
-                                .deleteTodo(id);
+                            final confirmed = await _confirmDelete(context);
+                            if (confirmed == true) {
+                              ref
+                                  .read(todoControllerProvider.notifier)
+                                  .deleteTodo(id);
+                            }
                           },
                           icon: Icon(
                             Icons.delete_outline_rounded,
@@ -480,6 +483,47 @@ class TodoTile extends ConsumerWidget {
       case TaskStatus.done:
         return Icons.check_circle_rounded;
     }
+  }
+
+  Future<bool?> _confirmDelete(BuildContext context) async {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(TodoDesignSystem.radiusLarge),
+        ),
+        title: Text('Delete Task?', style: TodoDesignSystem.headingSmall),
+        content: Text(
+          'Are you sure you want to delete this task?',
+          style: TodoDesignSystem.bodyMedium,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(
+              'Cancel',
+              style: TodoDesignSystem.labelLarge.copyWith(
+                color: TodoDesignSystem.neutralGray600,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              Navigator.pop(context, true);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: TodoDesignSystem.errorRed,
+              foregroundColor: Colors.white,
+            ),
+            child: Text(
+              'Delete',
+              style: TodoDesignSystem.labelLarge.copyWith(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
