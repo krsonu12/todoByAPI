@@ -319,16 +319,18 @@ class TodoTile extends ConsumerWidget {
                                 spacing: TodoDesignSystem.spacing8,
                                 runSpacing: TodoDesignSystem.spacing4,
                                 children: [
-                                  if (extras.dueDate != null)
+                                  if (extras.status != TaskStatus.done &&
+                                      extras.dueDate != null)
                                     _ModernChip(
                                       icon: Icons.schedule_rounded,
                                       label: _fmtDate(extras.dueDate!),
                                       color: _getDueDateColor(extras.dueDate!),
                                     ),
-                                  AnimatedPriorityChip(
-                                    priority: extras.priority.name,
-                                    label: _labelPriority(extras.priority),
-                                  ),
+                                  if (extras.status != TaskStatus.done)
+                                    AnimatedPriorityChip(
+                                      priority: extras.priority.name,
+                                      label: _labelPriority(extras.priority),
+                                    ),
                                   _ModernChip(
                                     icon: _getStatusIcon(extras.status),
                                     label: _labelStatus(extras.status),
