@@ -255,6 +255,7 @@ class TodoTile extends ConsumerWidget {
                 future: ref.read(taskExtrasDaoProvider).findByTaskId(id),
                 builder: (context, snap) {
                   final extras = snap.data;
+                  final bool isDone = extras?.status == TaskStatus.done;
                   return Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -293,7 +294,9 @@ class TodoTile extends ConsumerWidget {
                               duration: TodoDesignSystem.animationMedium,
                               style: TodoDesignSystem.bodyLarge.copyWith(
                                 color: TodoDesignSystem.neutralGray900,
-                                decoration: TextDecoration.none,
+                                decoration: isDone
+                                    ? TextDecoration.lineThrough
+                                    : TextDecoration.none,
                                 fontWeight: FontWeight.w600,
                               ),
                               child: Text(
@@ -308,6 +311,9 @@ class TodoTile extends ConsumerWidget {
                                 extras!.description,
                                 style: TodoDesignSystem.bodySmall.copyWith(
                                   color: TodoDesignSystem.neutralGray600,
+                                  decoration: isDone
+                                      ? TextDecoration.lineThrough
+                                      : TextDecoration.none,
                                 ),
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
