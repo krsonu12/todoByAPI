@@ -1,4 +1,13 @@
+// coverage:ignore-file
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint
+// ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
+
 part of 'todo_model.dart';
+
+// **************************************************************************
+// FreezedGenerator
+// **************************************************************************
 
 T _$identity<T>(T value) => value;
 
@@ -10,17 +19,24 @@ TodoModel _$TodoModelFromJson(Map<String, dynamic> json) {
   return _TodoModel.fromJson(json);
 }
 
+/// @nodoc
 mixin _$TodoModel {
   int? get userId => throw _privateConstructorUsedError;
   int? get id => throw _privateConstructorUsedError;
   String get title => throw _privateConstructorUsedError;
   bool get completed => throw _privateConstructorUsedError;
+
+  /// Serializes this TodoModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of TodoModel
+  /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   $TodoModelCopyWith<TodoModel> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
+/// @nodoc
 abstract class $TodoModelCopyWith<$Res> {
   factory $TodoModelCopyWith(TodoModel value, $Res Function(TodoModel) then) =
       _$TodoModelCopyWithImpl<$Res, TodoModel>;
@@ -28,11 +44,18 @@ abstract class $TodoModelCopyWith<$Res> {
   $Res call({int? userId, int? id, String title, bool completed});
 }
 
+/// @nodoc
 class _$TodoModelCopyWithImpl<$Res, $Val extends TodoModel>
     implements $TodoModelCopyWith<$Res> {
   _$TodoModelCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
   final $Val _value;
+  // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of TodoModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -65,6 +88,7 @@ class _$TodoModelCopyWithImpl<$Res, $Val extends TodoModel>
   }
 }
 
+/// @nodoc
 abstract class _$$TodoModelImplCopyWith<$Res>
     implements $TodoModelCopyWith<$Res> {
   factory _$$TodoModelImplCopyWith(
@@ -76,6 +100,7 @@ abstract class _$$TodoModelImplCopyWith<$Res>
   $Res call({int? userId, int? id, String title, bool completed});
 }
 
+/// @nodoc
 class __$$TodoModelImplCopyWithImpl<$Res>
     extends _$TodoModelCopyWithImpl<$Res, _$TodoModelImpl>
     implements _$$TodoModelImplCopyWith<$Res> {
@@ -83,6 +108,9 @@ class __$$TodoModelImplCopyWithImpl<$Res>
     _$TodoModelImpl _value,
     $Res Function(_$TodoModelImpl) _then,
   ) : super(_value, _then);
+
+  /// Create a copy of TodoModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -114,6 +142,7 @@ class __$$TodoModelImplCopyWithImpl<$Res>
   }
 }
 
+/// @nodoc
 @JsonSerializable()
 class _$TodoModelImpl implements _TodoModel {
   const _$TodoModelImpl({
@@ -155,6 +184,9 @@ class _$TodoModelImpl implements _TodoModel {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, userId, id, title, completed);
+
+  /// Create a copy of TodoModel
+  /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
@@ -186,6 +218,9 @@ abstract class _TodoModel implements TodoModel {
   String get title;
   @override
   bool get completed;
+
+  /// Create a copy of TodoModel
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$TodoModelImplCopyWith<_$TodoModelImpl> get copyWith =>

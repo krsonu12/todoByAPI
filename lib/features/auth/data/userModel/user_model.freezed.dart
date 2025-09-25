@@ -1,4 +1,13 @@
+// coverage:ignore-file
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint
+// ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
+
 part of 'user_model.dart';
+
+// **************************************************************************
+// FreezedGenerator
+// **************************************************************************
 
 T _$identity<T>(T value) => value;
 
@@ -10,6 +19,7 @@ UserModel _$UserModelFromJson(Map<String, dynamic> json) {
   return _UserModel.fromJson(json);
 }
 
+/// @nodoc
 mixin _$UserModel {
   int get id => throw _privateConstructorUsedError;
   String get email => throw _privateConstructorUsedError;
@@ -18,12 +28,18 @@ mixin _$UserModel {
   @JsonKey(name: 'last_name')
   String get lastName => throw _privateConstructorUsedError;
   String get avatar => throw _privateConstructorUsedError;
+
+  /// Serializes this UserModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of UserModel
+  /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   $UserModelCopyWith<UserModel> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
+/// @nodoc
 abstract class $UserModelCopyWith<$Res> {
   factory $UserModelCopyWith(UserModel value, $Res Function(UserModel) then) =
       _$UserModelCopyWithImpl<$Res, UserModel>;
@@ -37,11 +53,18 @@ abstract class $UserModelCopyWith<$Res> {
   });
 }
 
+/// @nodoc
 class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
     implements $UserModelCopyWith<$Res> {
   _$UserModelCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
   final $Val _value;
+  // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of UserModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -79,6 +102,7 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
   }
 }
 
+/// @nodoc
 abstract class _$$UserModelImplCopyWith<$Res>
     implements $UserModelCopyWith<$Res> {
   factory _$$UserModelImplCopyWith(
@@ -96,6 +120,7 @@ abstract class _$$UserModelImplCopyWith<$Res>
   });
 }
 
+/// @nodoc
 class __$$UserModelImplCopyWithImpl<$Res>
     extends _$UserModelCopyWithImpl<$Res, _$UserModelImpl>
     implements _$$UserModelImplCopyWith<$Res> {
@@ -103,6 +128,9 @@ class __$$UserModelImplCopyWithImpl<$Res>
     _$UserModelImpl _value,
     $Res Function(_$UserModelImpl) _then,
   ) : super(_value, _then);
+
+  /// Create a copy of UserModel
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -139,6 +167,7 @@ class __$$UserModelImplCopyWithImpl<$Res>
   }
 }
 
+/// @nodoc
 @JsonSerializable()
 class _$UserModelImpl implements _UserModel {
   const _$UserModelImpl({
@@ -188,6 +217,9 @@ class _$UserModelImpl implements _UserModel {
   @override
   int get hashCode =>
       Object.hash(runtimeType, id, email, firstName, lastName, avatar);
+
+  /// Create a copy of UserModel
+  /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
@@ -224,6 +256,9 @@ abstract class _UserModel implements UserModel {
   String get lastName;
   @override
   String get avatar;
+
+  /// Create a copy of UserModel
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$UserModelImplCopyWith<_$UserModelImpl> get copyWith =>
