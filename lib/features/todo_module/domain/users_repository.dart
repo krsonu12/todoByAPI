@@ -38,23 +38,6 @@ class UsersRepository {
     }
     return <AppUser>[];
   }
-
-  Future<AppUser?> getUser(int id) async {
-    final Response<dynamic> res = await client.get('$_base/users/$id');
-    final dynamic root = res.data;
-    if (root is Map<String, dynamic>) {
-      final dynamic data = root['data'];
-      if (data is Map<String, dynamic>) {
-        return AppUser(
-          id: (data['id'] as num?)?.toInt() ?? id,
-          name:
-              '${(data['first_name'] as String?) ?? ''} ${(data['last_name'] as String?) ?? ''}'
-                  .trim(),
-        );
-      }
-    }
-    return null;
-  }
 }
 
 final usersRepositoryProvider = Provider<UsersRepository>((ref) {

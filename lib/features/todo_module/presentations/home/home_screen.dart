@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../../todo_module/data/todo_model.dart';
 import '../../../todo_module/presentations/todo_controller/todo_controller.dart';
-import '../../data/task_extras.dart';
-import '../../data/task_extras_dao.dart';
+import '../../data/local_db/task_extras.dart';
+import '../../data/local_db/task_extras_dao.dart';
 import '../../domain/users_repository.dart';
+import '../shared/animated_widgets.dart';
+import '../shared/design_system.dart';
+import '../shared/responsive_layout.dart';
 import 'task_edit_sheet.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -16,168 +20,204 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final todosAsync = ref.watch(todoControllerProvider);
     return Scaffold(
+      backgroundColor: TodoDesignSystem.neutralGray50,
       appBar: AppBar(
-        title: const Text('Todos'),
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        title: Text(
+          'My Tasks',
+          style: TodoDesignSystem.headingMedium.copyWith(
+            color: TodoDesignSystem.neutralGray900,
+          ),
+        ),
         actions: [
-          IconButton(
-            onPressed: () {
-              ref.read(authControllerProvider.notifier).logout();
-            },
-            icon: const Icon(Icons.logout),
+          Container(
+            margin: const EdgeInsets.only(right: TodoDesignSystem.spacing16),
+            child: IconButton(
+              onPressed: () {
+                HapticFeedback.lightImpact();
+                ref.read(authControllerProvider.notifier).logout();
+              },
+              icon: Container(
+                padding: const EdgeInsets.all(TodoDesignSystem.spacing8),
+                decoration: BoxDecoration(
+                  color: TodoDesignSystem.neutralGray100,
+                  borderRadius: BorderRadius.circular(
+                    TodoDesignSystem.radiusSmall,
+                  ),
+                ),
+                child: const Icon(
+                  Icons.logout_rounded,
+                  color: TodoDesignSystem.neutralGray600,
+                  size: 20,
+                ),
+              ),
+            ),
           ),
         ],
       ),
       body: todosAsync.when(
         data: (todos) {
           if (todos.isEmpty) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Icon(
-                      Icons.check_circle_outline,
-                      size: 72,
-                      color: Colors.grey,
-                    ),
-                    SizedBox(height: 12),
-                    Text(
-                      'You\'re all caught up!',
-                      style: TextStyle(fontSize: 18),
-                    ),
-                    SizedBox(height: 6),
-                    Text(
-                      'Tap + to add your first todo',
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                  ],
-                ),
-              ),
-            );
+            return _EmptyState();
           }
-          return RefreshIndicator(
-            onRefresh: () =>
-                ref.read(todoControllerProvider.notifier).refresh(),
-            child: NotificationListener<ScrollNotification>(
-              onNotification: (sn) {
-                if (sn.metrics.pixels >= sn.metrics.maxScrollExtent - 200) {
-                  ref.read(todoControllerProvider.notifier).loadMore();
-                }
-                return false;
-              },
-              child: ListView.separated(
-                padding: const EdgeInsets.only(bottom: 96),
-                itemCount: todos.length + 1,
-                separatorBuilder: (_, __) => const Divider(height: 1),
-                itemBuilder: (context, index) {
-                  if (index == todos.length) {
-                    return const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 16),
-                      child: Center(child: CircularProgressIndicator()),
-                    );
+          return ResponsiveContainer(
+            maxWidth: 800,
+            child: RefreshIndicator(
+              onRefresh: () =>
+                  ref.read(todoControllerProvider.notifier).refresh(),
+              child: NotificationListener<ScrollNotification>(
+                onNotification: (sn) {
+                  if (sn.metrics.pixels >= sn.metrics.maxScrollExtent - 200) {
+                    ref.read(todoControllerProvider.notifier).loadMore();
                   }
-                  final TodoModel t = todos[index];
-                  final int itemId = t.id ?? index;
-                  return Dismissible(
-                    key: ValueKey<int>(itemId),
-                    direction: DismissDirection.endToStart,
-                    background: Container(
-                      alignment: Alignment.centerRight,
-                      color: Colors.red.withOpacity(0.1),
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: const Icon(Icons.delete, color: Colors.red),
-                    ),
-                    confirmDismiss: (_) async {
-                      return await showDialog<bool>(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                              title: const Text('Delete todo?'),
-                              content: Text(
-                                'Are you sure you want to delete "${t.title}"?',
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () =>
-                                      Navigator.pop(context, false),
-                                  child: const Text('Cancel'),
-                                ),
-                                ElevatedButton(
-                                  onPressed: () => Navigator.pop(context, true),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.red,
-                                  ),
-                                  child: const Text('Delete'),
-                                ),
-                              ],
-                            ),
-                          ) ??
-                          false;
-                    },
-                    onDismissed: (_) {
-                      ref
-                          .read(todoControllerProvider.notifier)
-                          .deleteTodo(itemId);
-                    },
-                    child: AnimatedSize(
-                      duration: const Duration(milliseconds: 250),
-                      curve: Curves.easeInOut,
-                      child: TodoTile(id: itemId, initialTitle: t.title),
-                    ),
-                  );
+                  return false;
                 },
+                child: ListView.builder(
+                  padding: const EdgeInsets.only(
+                    top: TodoDesignSystem.spacing8,
+                    bottom: 96,
+                  ),
+                  itemCount: todos.length + 1,
+                  itemBuilder: (context, index) {
+                    if (index == todos.length) {
+                      return Container(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: TodoDesignSystem.spacing24,
+                        ),
+                        child: const Center(child: CircularProgressIndicator()),
+                      );
+                    }
+                    final TodoModel t = todos[index];
+                    final int itemId = t.id ?? index;
+                    return AnimatedSlideItem(
+                      index: index,
+                      child: Container(
+                        margin: const EdgeInsets.only(
+                          bottom: TodoDesignSystem.spacing12,
+                        ),
+                        child: Dismissible(
+                          key: ValueKey<int>(itemId),
+                          direction: DismissDirection.endToStart,
+                          background: _DismissBackground(),
+                          confirmDismiss: (_) => _showDeleteDialog(context, t),
+                          onDismissed: (_) {
+                            HapticFeedback.mediumImpact();
+                            ref
+                                .read(todoControllerProvider.notifier)
+                                .deleteTodo(itemId);
+                          },
+                          child: TodoTile(id: itemId, initialTitle: t.title),
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        loading: () => _LoadingState(),
+        error: (e, _) => _ErrorState(error: e.toString()),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          final users = await ref.read(usersRepositoryProvider).getUsers();
-          final result = await showModalBottomSheet<TaskFormResult>(
-            context: context,
-            isScrollControlled: true,
-            builder: (context) => TaskEditSheet(prefetchedUsers: users),
+      floatingActionButton: AnimatedMorphingFAB(
+        onPressed: () => _showAddTaskSheet(context, ref),
+        icon: Icons.add_rounded,
+      ),
+    );
+  }
+
+  Future<void> _showAddTaskSheet(BuildContext context, WidgetRef ref) async {
+    final users = await ref.read(usersRepositoryProvider).getUsers();
+    final result = await ResponsiveBottomSheet.show<TaskFormResult>(
+      context: context,
+      child: TaskEditSheet(prefetchedUsers: users),
+    );
+    if (result != null && result.title.isNotEmpty) {
+      // Create the todo with a temporary ID
+      final tempId = DateTime.now().millisecondsSinceEpoch * -1;
+      final todo = TodoModel(
+        id: tempId,
+        userId: 1,
+        title: result.title,
+        completed: false,
+      );
+
+      // Save extras first with the temp ID
+      await ref
+          .read(taskExtrasDaoProvider)
+          .upsert(
+            TaskExtras(
+              taskId: tempId,
+              description: result.description,
+              dueDate: result.dueDate,
+              priority: result.priority,
+              status: result.status,
+              assignedUserId: result.assignedUserId,
+              assignedUserName: result.assignedUserName,
+            ),
           );
-          if (result != null && result.title.isNotEmpty) {
-            final todo = TodoModel(
-              userId: 1,
-              title: result.title,
-              completed: false,
-            );
-            await ref.read(todoControllerProvider.notifier).addTodo(todo);
-            final list =
-                ref.read(todoControllerProvider).value ?? <TodoModel>[];
-            final created = list.firstWhere(
-              (tt) => tt.title == result.title,
-              orElse: () => todo,
-            );
-            final taskId = created.id ?? -1;
-            await ref
-                .read(taskExtrasDaoProvider)
-                .upsert(
-                  TaskExtras(
-                    taskId: taskId,
-                    description: result.description,
-                    dueDate: result.dueDate,
-                    priority: result.priority,
-                    status: result.status,
-                    assignedUserId: result.assignedUserId,
-                    assignedUserName: result.assignedUserName,
-                  ),
-                );
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  'Created: ${result.title} • ${_labelPriority(result.priority)} • ${_labelStatus(result.status)}${result.assignedUserName != null ? ' • ${result.assignedUserName}' : ''}',
-                ),
+
+      // Add the todo (this will handle local storage and API sync)
+      await ref.read(todoControllerProvider.notifier).addTodo(todo);
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: TodoDesignSystem.successGreen,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(
+                TodoDesignSystem.radiusMedium,
               ),
-            );
-          }
-        },
-        child: const Icon(Icons.add),
+            ),
+            content: Text(
+              'Task created: ${result.title}',
+              style: TodoDesignSystem.bodyMedium.copyWith(color: Colors.white),
+            ),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<bool?> _showDeleteDialog(BuildContext context, TodoModel todo) async {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(TodoDesignSystem.radiusLarge),
+        ),
+        title: Text('Delete Task?', style: TodoDesignSystem.headingSmall),
+        content: Text(
+          'Are you sure you want to delete "${todo.title}"? This action cannot be undone.',
+          style: TodoDesignSystem.bodyMedium,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(
+              'Cancel',
+              style: TodoDesignSystem.labelLarge.copyWith(
+                color: TodoDesignSystem.neutralGray600,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              Navigator.pop(context, true);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: TodoDesignSystem.errorRed,
+              foregroundColor: Colors.white,
+            ),
+            child: Text(
+              'Delete',
+              style: TodoDesignSystem.labelLarge.copyWith(color: Colors.white),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -205,151 +245,259 @@ class TodoTile extends ConsumerWidget {
     return asyncItem.when(
       data: (todo) {
         if (todo == null) return const SizedBox.shrink();
-        return Card(
-          key: ValueKey<int>(id),
-          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          elevation: 2,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(16),
-            onTap: () async {
-              final users = await ref.read(usersRepositoryProvider).getUsers();
-              final result = await showModalBottomSheet<TaskFormResult>(
-                context: context,
-                isScrollControlled: true,
-                builder: (context) => TaskEditSheet(
-                  initial: TaskFormResult(title: todo.title),
-                  prefetchedUsers: users,
-                ),
-              );
-              if (result != null) {
-                if (result.title.isNotEmpty && result.title != todo.title) {
-                  ref
-                      .read(todoControllerProvider.notifier)
-                      .updateTodo(id, todo.copyWith(title: result.title));
-                }
-                await ref
-                    .read(taskExtrasDaoProvider)
-                    .upsert(
-                      TaskExtras(
-                        taskId: id,
-                        description: result.description,
-                        dueDate: result.dueDate,
-                        priority: result.priority,
-                        status: result.status,
-                        assignedUserId: result.assignedUserId,
-                        assignedUserName: result.assignedUserName,
-                      ),
-                    );
-              }
-            },
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(12, 8, 8, 12),
-              child: FutureBuilder(
+        return AnimatedTaskCard(
+          onTap: () => _editTask(context, ref, todo),
+          child: Consumer(
+            builder: (context, ref, child) {
+              // Watch for changes in the todo controller to trigger rebuilds
+              ref.watch(todoControllerProvider);
+
+              return FutureBuilder(
                 future: ref.read(taskExtrasDaoProvider).findByTaskId(id),
                 builder: (context, snap) {
                   final extras = snap.data;
-                  return Column(
+                  return Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  todo.title,
-                                  style: Theme.of(
-                                    context,
-                                  ).textTheme.titleMedium,
+                  
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Title
+                            AnimatedDefaultTextStyle(
+                              duration: TodoDesignSystem.animationMedium,
+                              style: TodoDesignSystem.bodyLarge.copyWith(
+                                color:  TodoDesignSystem.neutralGray900,
+                                decoration:  TextDecoration.none,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              child: Text(
+                                todo.title,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            // Description
+                            if (extras?.description.isNotEmpty == true) ...[
+                              const SizedBox(height: TodoDesignSystem.spacing4),
+                              Text(
+                                extras!.description,
+                                style: TodoDesignSystem.bodySmall.copyWith(
+                                  color: TodoDesignSystem.neutralGray600,
                                 ),
-                                if (extras != null &&
-                                    extras.description.isNotEmpty)
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 4.0),
-                                    child: Text(
-                                      extras.description,
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.bodySmall,
-                                      maxLines: 3,
-                                      overflow: TextOverflow.ellipsis,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                            // Chips
+                            if (extras != null) ...[
+                              const SizedBox(height: TodoDesignSystem.spacing8),
+                              Wrap(
+                                spacing: TodoDesignSystem.spacing8,
+                                runSpacing: TodoDesignSystem.spacing4,
+                                children: [
+                                  if (extras.dueDate != null)
+                                    _ModernChip(
+                                      icon: Icons.schedule_rounded,
+                                      label: _fmtDate(extras.dueDate!),
+                                      color: _getDueDateColor(extras.dueDate!),
+                                    ),
+                                  AnimatedPriorityChip(
+                                    priority: extras.priority.name,
+                                    label: _labelPriority(extras.priority),
+                                  ),
+                                  _ModernChip(
+                                    icon: _getStatusIcon(extras.status),
+                                    label: _labelStatus(extras.status),
+                                    color: TodoDesignSystem.getStatusColor(
+                                      extras.status.name,
                                     ),
                                   ),
-                              ],
-                            ),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete, color: Colors.red),
-                            onPressed: () {
-                              ref
-                                  .read(todoControllerProvider.notifier)
-                                  .deleteTodo(id);
-                            },
-                          ),
-                        ],
-                      ),
-                      if (extras != null)
-                        Padding(
-                          padding: const EdgeInsets.only(left: 8, top: 8),
-                          child: Wrap(
-                            spacing: 8,
-                            runSpacing: -6,
-                            children: [
-                              if (extras.dueDate != null)
-                                _Chip(
-                                  icon: Icons.event,
-                                  label: _fmtDate(extras.dueDate!),
-                                ),
-                              _Chip(
-                                icon: Icons.flag,
-                                label: _labelPriority(extras.priority),
+                                  if (extras.assignedUserName != null)
+                                    _ModernChip(
+                                      icon: Icons.person_rounded,
+                                      label: extras.assignedUserName!,
+                                      color: TodoDesignSystem.secondaryPurple,
+                                    ),
+                                ],
                               ),
-                              _Chip(
-                                icon: Icons.work,
-                                label: _labelStatus(extras.status),
-                              ),
-
-                              if (extras.assignedUserName != null)
-                                _Chip(
-                                  icon: Icons.person,
-                                  label: extras.assignedUserName!,
-                                ),
                             ],
-                          ),
+                          ],
                         ),
+                      ),
+                      // Delete Button
+                      Container(
+                        margin: const EdgeInsets.only(
+                          left: TodoDesignSystem.spacing8,
+                        ),
+                        child: IconButton(
+                          onPressed: () {
+                            HapticFeedback.lightImpact();
+                            ref
+                                .read(todoControllerProvider.notifier)
+                                .deleteTodo(id);
+                          },
+                          icon: Icon(
+                            Icons.delete_outline_rounded,
+                            color: TodoDesignSystem.neutralGray400,
+                            size: 20,
+                          ),
+                          visualDensity: VisualDensity.compact,
+                        ),
+                      ),
                     ],
                   );
                 },
-              ),
-            ),
+              );
+            },
           ),
         );
       },
-      loading: () => const ListTile(title: Text('...')),
-      error: (e, _) => ListTile(title: Text('Error: $e')),
+      loading: () => AnimatedSkeleton(
+        width: double.infinity,
+        height: 80,
+        borderRadius: BorderRadius.circular(TodoDesignSystem.radiusMedium),
+      ),
+      error: (e, _) => Container(
+        padding: const EdgeInsets.all(TodoDesignSystem.spacing16),
+        decoration: BoxDecoration(
+          color: TodoDesignSystem.errorRed.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(TodoDesignSystem.radiusMedium),
+        ),
+        child: Text(
+          'Error loading task: $e',
+          style: TodoDesignSystem.bodySmall.copyWith(
+            color: TodoDesignSystem.errorRed,
+          ),
+        ),
+      ),
     );
+  }
+
+  Future<void> _editTask(
+    BuildContext context,
+    WidgetRef ref,
+    TodoModel todo,
+  ) async {
+    HapticFeedback.lightImpact();
+    final users = await ref.read(usersRepositoryProvider).getUsers();
+
+    // Get current extras to pre-populate the form
+    final extras = await ref.read(taskExtrasDaoProvider).findByTaskId(id);
+    final assignedUser = extras?.assignedUserId != null
+        ? users.firstWhere(
+            (u) => u.id == extras!.assignedUserId,
+            orElse: () => AppUser(
+              id: extras!.assignedUserId!,
+              name: extras.assignedUserName ?? 'Unknown User',
+            ),
+          )
+        : null;
+
+    final result = await ResponsiveBottomSheet.show<TaskFormResult>(
+      context: context,
+      child: TaskEditSheet(
+        initial: TaskFormResult(
+          title: todo.title,
+          description: extras?.description ?? '',
+          dueDate: extras?.dueDate,
+          priority: extras?.priority ?? TaskPriority.medium,
+          status: extras?.status ?? TaskStatus.todo,
+          assignedUserId: assignedUser?.id,
+          assignedUserName: assignedUser?.name,
+        ),
+        prefetchedUsers: users,
+      ),
+    );
+    if (result != null) {
+      // Always update the todo in the controller to trigger UI refresh
+
+      // Update extras first
+      await ref
+          .read(taskExtrasDaoProvider)
+          .upsert(
+            TaskExtras(
+              taskId: id,
+              description: result.description,
+              dueDate: result.dueDate,
+              priority: result.priority,
+              status: result.status,
+              assignedUserId: result.assignedUserId,
+              assignedUserName: result.assignedUserName,
+            ),
+          );
+
+      // Always update the todo to trigger UI refresh, even if just extras changed
+      ref
+          .read(todoControllerProvider.notifier)
+          .updateTodo(
+            id,
+            todo.copyWith(
+              title: result.title.isNotEmpty ? result.title : todo.title,
+            ),
+          );
+    }
+  }
+
+  Color _getDueDateColor(DateTime dueDate) {
+    final now = DateTime.now();
+    final difference = dueDate.difference(now).inDays;
+    if (difference < 0) return TodoDesignSystem.errorRed;
+    if (difference == 0) return TodoDesignSystem.warningOrange;
+    if (difference <= 3) return TodoDesignSystem.warningOrange;
+    return TodoDesignSystem.neutralGray500;
+  }
+
+  IconData _getStatusIcon(TaskStatus status) {
+    switch (status) {
+      case TaskStatus.todo:
+        return Icons.radio_button_unchecked_rounded;
+      case TaskStatus.inProgress:
+        return Icons.hourglass_empty_rounded;
+      case TaskStatus.done:
+        return Icons.check_circle_rounded;
+    }
   }
 }
 
-class _Chip extends StatelessWidget {
-  const _Chip({required this.icon, required this.label});
+class _ModernChip extends StatelessWidget {
+  const _ModernChip({
+    required this.icon,
+    required this.label,
+    required this.color,
+  });
+
   final IconData icon;
   final String label;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
-    return Chip(
-      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      labelPadding: const EdgeInsets.symmetric(horizontal: 6),
-      avatar: Icon(icon, size: 16),
-      label: Text(label),
-      visualDensity: VisualDensity.compact,
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: TodoDesignSystem.spacing8,
+        vertical: TodoDesignSystem.spacing2,
+      ),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(TodoDesignSystem.radiusSmall),
+        border: Border.all(color: color.withOpacity(0.3), width: 1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: color),
+          const SizedBox(width: TodoDesignSystem.spacing4),
+          Text(
+            label,
+            style: TodoDesignSystem.labelSmall.copyWith(
+              color: color,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -367,80 +515,217 @@ String _labelStatus(TaskStatus s) => {
   TaskStatus.done: 'Done',
 }[s]!;
 
-class TodoEditSheet extends StatefulWidget {
-  const TodoEditSheet({super.key, this.initialTitle});
-  final String? initialTitle;
-
+// New State Widgets
+class _EmptyState extends StatelessWidget {
   @override
-  State<TodoEditSheet> createState() => _TodoEditSheetState();
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(TodoDesignSystem.spacing32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                color: TodoDesignSystem.primaryBlue.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.task_alt_rounded,
+                size: 60,
+                color: TodoDesignSystem.primaryBlue,
+              ),
+            ),
+            const SizedBox(height: TodoDesignSystem.spacing24),
+            Text(
+              'All caught up!',
+              style: TodoDesignSystem.headingMedium.copyWith(
+                color: TodoDesignSystem.neutralGray900,
+              ),
+            ),
+            const SizedBox(height: TodoDesignSystem.spacing8),
+            Text(
+              'You have no tasks at the moment.\nTap the + button to create your first task.',
+              textAlign: TextAlign.center,
+              style: TodoDesignSystem.bodyMedium.copyWith(
+                color: TodoDesignSystem.neutralGray600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
-class _TodoEditSheetState extends State<TodoEditSheet> {
-  late final TextEditingController _controller;
-
+class _LoadingState extends StatelessWidget {
   @override
-  void initState() {
-    super.initState();
-    _controller = TextEditingController(text: widget.initialTitle ?? '');
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(TodoDesignSystem.spacing16),
+      child: Column(
+        children: List.generate(
+          6,
+          (index) => Container(
+            margin: const EdgeInsets.only(bottom: TodoDesignSystem.spacing12),
+            padding: const EdgeInsets.all(TodoDesignSystem.spacing16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(
+                TodoDesignSystem.radiusMedium,
+              ),
+              boxShadow: TodoDesignSystem.shadowSmall,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    AnimatedSkeleton(
+                      width: 20,
+                      height: 20,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    const SizedBox(width: TodoDesignSystem.spacing12),
+                    Expanded(
+                      child: AnimatedSkeleton(
+                        width: double.infinity,
+                        height: 16,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: TodoDesignSystem.spacing8),
+                AnimatedSkeleton(
+                  width: double.infinity,
+                  height: 12,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                const SizedBox(height: TodoDesignSystem.spacing4),
+                AnimatedSkeleton(
+                  width: 200,
+                  height: 12,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                const SizedBox(height: TodoDesignSystem.spacing8),
+                Row(
+                  children: [
+                    AnimatedSkeleton(
+                      width: 60,
+                      height: 20,
+                      borderRadius: BorderRadius.circular(
+                        TodoDesignSystem.radiusSmall,
+                      ),
+                    ),
+                    const SizedBox(width: TodoDesignSystem.spacing8),
+                    AnimatedSkeleton(
+                      width: 80,
+                      height: 20,
+                      borderRadius: BorderRadius.circular(
+                        TodoDesignSystem.radiusSmall,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
+}
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
+class _ErrorState extends StatelessWidget {
+  const _ErrorState({required this.error});
+  final String error;
 
   @override
   Widget build(BuildContext context) {
-    final bottom = MediaQuery.of(context).viewInsets.bottom;
-    return Padding(
-      padding: EdgeInsets.only(bottom: bottom),
-      child: Material(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                children: [
-                  Text(
-                    widget.initialTitle == null ? 'New Todo' : 'Edit Todo',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close),
-                  ),
-                ],
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(TodoDesignSystem.spacing32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                color: TodoDesignSystem.errorRed.withOpacity(0.1),
+                shape: BoxShape.circle,
               ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _controller,
-                autofocus: true,
-                decoration: const InputDecoration(
-                  hintText: 'Title',
-                  border: OutlineInputBorder(),
-                ),
-                onSubmitted: (val) {
-                  final v = val.trim();
-                  if (v.isNotEmpty) Navigator.pop(context, v);
-                },
+              child: const Icon(
+                Icons.error_outline_rounded,
+                size: 60,
+                color: TodoDesignSystem.errorRed,
               ),
-              const SizedBox(height: 12),
-              ElevatedButton(
-                onPressed: () {
-                  final v = _controller.text.trim();
-                  if (v.isNotEmpty) Navigator.pop(context, v);
-                },
-                child: Text(widget.initialTitle == null ? 'Add' : 'Save'),
+            ),
+            const SizedBox(height: TodoDesignSystem.spacing24),
+            Text(
+              'Something went wrong',
+              style: TodoDesignSystem.headingMedium.copyWith(
+                color: TodoDesignSystem.neutralGray900,
               ),
-            ],
-          ),
+            ),
+            const SizedBox(height: TodoDesignSystem.spacing8),
+            Text(
+              'Unable to load your tasks. Please try again.',
+              textAlign: TextAlign.center,
+              style: TodoDesignSystem.bodyMedium.copyWith(
+                color: TodoDesignSystem.neutralGray600,
+              ),
+            ),
+            const SizedBox(height: TodoDesignSystem.spacing16),
+            ElevatedButton.icon(
+              onPressed: () {
+                // Trigger refresh
+              },
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('Try Again'),
+            ),
+          ],
         ),
+      ),
+    );
+  }
+}
+
+class _DismissBackground extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      alignment: Alignment.centerRight,
+      padding: const EdgeInsets.only(right: TodoDesignSystem.spacing20),
+      margin: const EdgeInsets.only(bottom: TodoDesignSystem.spacing12),
+      decoration: BoxDecoration(
+        color: TodoDesignSystem.errorRed.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(TodoDesignSystem.radiusMedium),
+        border: Border.all(
+          color: TodoDesignSystem.errorRed.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.delete_outline_rounded,
+            color: TodoDesignSystem.errorRed,
+            size: 28,
+          ),
+          const SizedBox(height: TodoDesignSystem.spacing4),
+          Text(
+            'Delete',
+            style: TodoDesignSystem.labelSmall.copyWith(
+              color: TodoDesignSystem.errorRed,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
       ),
     );
   }

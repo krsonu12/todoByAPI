@@ -8,18 +8,6 @@ class TodoRepository {
   final Dio client;
   static const String _base = 'https://jsonplaceholder.typicode.com';
 
-  Future<List<TodoModel>> getTasks() async {
-    final Response<dynamic> response = await client.get('$_base/todos');
-    final dynamic data = response.data;
-    if (data is List) {
-      return data
-          .whereType<Map<String, dynamic>>()
-          .map<TodoModel>(TodoModel.fromJson)
-          .toList();
-    }
-    return <TodoModel>[];
-  }
-
   Future<List<TodoModel>> getTasksPaged({
     required int start,
     required int limit,

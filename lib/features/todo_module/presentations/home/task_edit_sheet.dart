@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../data/task_extras.dart';
+import '../../data/local_db/task_extras.dart';
 import '../../domain/users_repository.dart';
+import '../shared/design_system.dart';
+import '../widgets/index.dart';
 
 class TaskFormResult {
   TaskFormResult({
@@ -72,15 +75,22 @@ class _TaskEditSheetState extends ConsumerState<TaskEditSheet> {
   @override
   Widget build(BuildContext context) {
     final bottom = MediaQuery.of(context).viewInsets.bottom;
-    return Padding(
+    return AnimatedContainer(
+      duration: TodoDesignSystem.animationMedium,
+      curve: TodoDesignSystem.curveDefault,
       padding: EdgeInsets.only(bottom: bottom),
-      child: Material(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(TodoDesignSystem.radiusXLarge),
+          ),
+          boxShadow: TodoDesignSystem.shadowLarge,
+        ),
         child: SafeArea(
           top: false,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+            padding: const EdgeInsets.all(TodoDesignSystem.spacing24),
             child: Form(
               key: _formKey,
               child: SingleChildScrollView(
@@ -88,111 +98,265 @@ class _TaskEditSheetState extends ConsumerState<TaskEditSheet> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Row(
+                    // Header with drag handle
+                    Column(
                       children: [
-                        Text(
-                          widget.initial == null ? 'New Task' : 'Edit Task',
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        const Spacer(),
-                        IconButton(
-                          onPressed: () => Navigator.pop(context),
-                          icon: const Icon(Icons.close),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: _title,
-                      decoration: const InputDecoration(
-                        labelText: 'Title',
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (v) => (v == null || v.trim().isEmpty)
-                          ? 'Title is required'
-                          : null,
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: _description,
-                      maxLines: 3,
-                      decoration: const InputDecoration(
-                        labelText: 'Description',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _DateField(
-                            value: _dueDate,
-                            onPick: (d) => setState(() => _dueDate = d),
+                        Container(
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: TodoDesignSystem.neutralGray300,
+                            borderRadius: BorderRadius.circular(2),
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: DropdownButtonFormField<TaskPriority>(
-                            initialValue: _priority,
-                            items: TaskPriority.values
-                                .map(
-                                  (p) => DropdownMenuItem(
-                                    value: p,
-                                    child: Text(_priorityLabel(p)),
+                        const SizedBox(height: TodoDesignSystem.spacing16),
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(
+                                TodoDesignSystem.spacing8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: TodoDesignSystem.primaryBlue.withOpacity(
+                                  0.1,
+                                ),
+                                borderRadius: BorderRadius.circular(
+                                  TodoDesignSystem.radiusSmall,
+                                ),
+                              ),
+                              child: Icon(
+                                widget.initial == null
+                                    ? Icons.add_task_rounded
+                                    : Icons.edit_rounded,
+                                color: TodoDesignSystem.primaryBlue,
+                                size: 20,
+                              ),
+                            ),
+                            const SizedBox(width: TodoDesignSystem.spacing12),
+                            Expanded(
+                              child: Text(
+                                widget.initial == null
+                                    ? 'Create New Task'
+                                    : 'Edit Task',
+                                style: TodoDesignSystem.headingSmall.copyWith(
+                                  color: TodoDesignSystem.neutralGray900,
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: () {
+                                HapticFeedback.lightImpact();
+                                Navigator.pop(context);
+                              },
+                              icon: Container(
+                                padding: const EdgeInsets.all(
+                                  TodoDesignSystem.spacing4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: TodoDesignSystem.neutralGray100,
+                                  borderRadius: BorderRadius.circular(
+                                    TodoDesignSystem.radiusSmall,
                                   ),
-                                )
-                                .toList(),
-                            onChanged: (v) =>
-                                setState(() => _priority = v ?? _priority),
-                            decoration: const InputDecoration(
-                              labelText: 'Priority',
-                              border: OutlineInputBorder(),
+                                ),
+                                child: const Icon(
+                                  Icons.close_rounded,
+                                  size: 18,
+                                  color: TodoDesignSystem.neutralGray600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: TodoDesignSystem.spacing24),
+                    // Title Field
+                    FormSection(
+                      title: 'Task Details',
+                      child: Column(
+                        children: [
+                          TextFormField(
+                            controller: _title,
+                            style: TodoDesignSystem.bodyLarge,
+                            decoration: InputDecoration(
+                              labelText: 'Task Title',
+                              hintText: 'What needs to be done?',
+                              prefixIcon: const Icon(Icons.title_rounded),
+                              filled: true,
+                              fillColor: TodoDesignSystem.neutralGray50,
+                            ),
+                            validator: (v) => (v == null || v.trim().isEmpty)
+                                ? 'Title is required'
+                                : null,
+                            textInputAction: TextInputAction.next,
+                          ),
+                          const SizedBox(height: TodoDesignSystem.spacing16),
+                          TextFormField(
+                            controller: _description,
+                            maxLines: 3,
+                            style: TodoDesignSystem.bodyMedium,
+                            decoration: InputDecoration(
+                              labelText: 'Description',
+                              hintText: 'Add more details about this task...',
+                              prefixIcon: const Icon(Icons.description_rounded),
+                              filled: true,
+                              fillColor: TodoDesignSystem.neutralGray50,
+                              alignLabelWithHint: true,
+                            ),
+                            textInputAction: TextInputAction.newline,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: TodoDesignSystem.spacing20),
+                    // Task Properties
+                    FormSection(
+                      title: 'Task Properties',
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: ModernDateField(
+                                  value: _dueDate,
+                                  onPick: (d) => setState(() => _dueDate = d),
+                                ),
+                              ),
+                              const SizedBox(width: TodoDesignSystem.spacing12),
+                              Expanded(
+                                child: ModernDropdown<TaskPriority>(
+                                  value: _priority,
+                                  items: TaskPriority.values
+                                      .map(
+                                        (p) => DropdownMenuItem(
+                                          value: p,
+                                          child: PriorityDropdownItem(
+                                            priority: p,
+                                          ),
+                                        ),
+                                      )
+                                      .toList(),
+                                  onChanged: (v) => setState(
+                                    () => _priority = v ?? _priority,
+                                  ),
+                                  label: 'Priority',
+                                  icon: Icons.flag_rounded,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: TodoDesignSystem.spacing16),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: ModernDropdown<TaskStatus>(
+                                  value: _status,
+                                  items: TaskStatus.values
+                                      .map(
+                                        (s) => DropdownMenuItem(
+                                          value: s,
+                                          child: StatusDropdownItem(status: s),
+                                        ),
+                                      )
+                                      .toList(),
+                                  onChanged: (v) =>
+                                      setState(() => _status = v ?? _status),
+                                  label: 'Status',
+                                  icon: Icons.work_rounded,
+                                ),
+                              ),
+                              const SizedBox(width: TodoDesignSystem.spacing12),
+                              Expanded(
+                                child: ModernUsersDropdown(
+                                  initial: _assigned,
+                                  onChanged: (u) =>
+                                      setState(() => _assigned = u),
+                                  prefetched: widget.prefetchedUsers,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: TodoDesignSystem.spacing32),
+                    // Action Buttons
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () {
+                              HapticFeedback.lightImpact();
+                              Navigator.pop(context);
+                            },
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: TodoDesignSystem.spacing16,
+                              ),
+                              side: BorderSide(
+                                color: TodoDesignSystem.neutralGray300,
+                              ),
+                            ),
+                            child: Text(
+                              'Cancel',
+                              style: TodoDesignSystem.labelLarge.copyWith(
+                                color: TodoDesignSystem.neutralGray600,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: TodoDesignSystem.spacing12),
+                        Expanded(
+                          flex: 2,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              if (!_formKey.currentState!.validate()) return;
+                              HapticFeedback.mediumImpact();
+                              final result = TaskFormResult(
+                                title: _title.text.trim(),
+                                description: _description.text.trim(),
+                                dueDate: _dueDate,
+                                priority: _priority,
+                                status: _status,
+                                assignedUserId: _assigned?.id,
+                                assignedUserName: _assigned?.name,
+                              );
+                              Navigator.pop(context, result);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: TodoDesignSystem.primaryBlue,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                vertical: TodoDesignSystem.spacing16,
+                              ),
+                              elevation: 0,
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  widget.initial == null
+                                      ? Icons.add_rounded
+                                      : Icons.save_rounded,
+                                  size: 20,
+                                ),
+                                const SizedBox(
+                                  width: TodoDesignSystem.spacing8,
+                                ),
+                                Text(
+                                  widget.initial == null
+                                      ? 'Create Task'
+                                      : 'Save Changes',
+                                  style: TodoDesignSystem.labelLarge.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 12),
-                    DropdownButtonFormField<TaskStatus>(
-                      initialValue: _status,
-                      items: TaskStatus.values
-                          .map(
-                            (s) => DropdownMenuItem(
-                              value: s,
-                              child: Text(_statusLabel(s)),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (v) => setState(() => _status = v ?? _status),
-                      decoration: const InputDecoration(
-                        labelText: 'Status',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    _UsersDropdown(
-                      initial: _assigned,
-                      onChanged: (u) => setState(() => _assigned = u),
-                      prefetched: widget.prefetchedUsers,
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () {
-                        if (!_formKey.currentState!.validate()) return;
-                        final result = TaskFormResult(
-                          title: _title.text.trim(),
-                          description: _description.text.trim(),
-                          dueDate: _dueDate,
-                          priority: _priority,
-                          status: _status,
-                          assignedUserId: _assigned?.id,
-                          assignedUserName: _assigned?.name,
-                        );
-                        Navigator.pop(context, result);
-                      },
-                      child: Text(
-                        widget.initial == null ? 'Add Task' : 'Save Changes',
-                      ),
                     ),
                   ],
                 ),
@@ -201,136 +365,6 @@ class _TaskEditSheetState extends ConsumerState<TaskEditSheet> {
           ),
         ),
       ),
-    );
-  }
-
-  String _priorityLabel(TaskPriority p) {
-    switch (p) {
-      case TaskPriority.high:
-        return 'High';
-      case TaskPriority.medium:
-        return 'Medium';
-      case TaskPriority.low:
-        return 'Low';
-    }
-  }
-
-  String _statusLabel(TaskStatus s) {
-    switch (s) {
-      case TaskStatus.todo:
-        return 'To-Do';
-      case TaskStatus.inProgress:
-        return 'In Progress';
-      case TaskStatus.done:
-        return 'Done';
-    }
-  }
-}
-
-class _DateField extends StatelessWidget {
-  const _DateField({
-    required this.value,
-    required this.onPick,
-    this.label = 'Due Date',
-  });
-  final DateTime? value;
-  final ValueChanged<DateTime?> onPick;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () async {
-        final now = DateTime.now();
-        final picked = await showDatePicker(
-          context: context,
-          firstDate: DateTime(now.year - 1),
-          lastDate: DateTime(now.year + 5),
-          initialDate: value ?? now,
-        );
-        onPick(picked);
-      },
-      child: InputDecorator(
-        decoration: const InputDecoration(
-          // labelText supplied below
-          border: OutlineInputBorder(),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              label,
-              style: Theme.of(context).inputDecorationTheme.labelStyle,
-            ),
-            const SizedBox(height: 6),
-            Text(value == null ? 'None' : _fmt(value!)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  String _fmt(DateTime d) =>
-      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
-}
-
-class _UsersDropdown extends ConsumerWidget {
-  const _UsersDropdown({
-    required this.onChanged,
-    this.initial,
-    this.prefetched,
-  });
-  final ValueChanged<AppUser?> onChanged;
-  final AppUser? initial;
-  final List<AppUser>? prefetched;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    if (prefetched != null) {
-      final items = prefetched!
-          .map((u) => DropdownMenuItem<AppUser>(value: u, child: Text(u.name)))
-          .toList();
-      final value = initial == null
-          ? null
-          : prefetched!.firstWhere(
-              (u) => u.id == initial!.id,
-              orElse: () => initial!,
-            );
-      return DropdownButtonFormField<AppUser>(
-        initialValue: value,
-        items: items,
-        onChanged: onChanged,
-        decoration: const InputDecoration(
-          labelText: 'Assigned User',
-          border: OutlineInputBorder(),
-        ),
-      );
-    }
-    return FutureBuilder<List<AppUser>>(
-      future: ref.read(usersRepositoryProvider).getUsers(),
-      builder: (context, snap) {
-        final items = (snap.data ?? <AppUser>[])
-            .map(
-              (u) => DropdownMenuItem<AppUser>(value: u, child: Text(u.name)),
-            )
-            .toList();
-        final value = (snap.hasData && initial != null)
-            ? (snap.data!.firstWhere(
-                (u) => u.id == initial!.id,
-                orElse: () => initial!,
-              ))
-            : null;
-        return DropdownButtonFormField<AppUser>(
-          initialValue: value,
-          items: items,
-          onChanged: onChanged,
-          decoration: const InputDecoration(
-            labelText: 'Assigned User',
-            border: OutlineInputBorder(),
-          ),
-        );
-      },
     );
   }
 }

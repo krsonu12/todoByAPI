@@ -122,18 +122,6 @@ class TaskLocalDb {
     }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
-  Future<Map<String, Object?>?> getFullById(int taskId) async {
-    final db = await database;
-    final rows = await db.query(
-      tableFull,
-      where: 'task_id = ?',
-      whereArgs: [taskId],
-      limit: 1,
-    );
-    if (rows.isEmpty) return null;
-    return rows.first;
-  }
-
   Future<void> deleteFullById(int taskId) async {
     final db = await database;
     await db.delete(tableFull, where: 'task_id = ?', whereArgs: [taskId]);
