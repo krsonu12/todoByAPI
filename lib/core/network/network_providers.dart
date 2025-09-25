@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../auth/auth_token_provider.dart';
+import '../../features/auth_module/auth/auth_token_provider.dart';
 import 'network_client.dart';
 
 final networkClientProvider = Provider<NetworkClient>((ref) {

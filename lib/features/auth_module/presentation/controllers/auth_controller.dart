@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/auth/auth_token_provider.dart';
-import '../../../../core/auth/token_storage.dart';
+import '../../auth/auth_token_provider.dart';
+import '../../auth/token_storage.dart';
 import '../../domain/providers/auth_providers.dart';
 
 class AuthController extends StateNotifier<AsyncValue<void>> {

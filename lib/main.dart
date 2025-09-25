@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'core/auth/auth_token_provider.dart';
-import 'core/auth/token_storage.dart';
+import 'features/auth_module/auth/auth_token_provider.dart';
+import 'features/auth_module/auth/token_storage.dart';
 import 'core/router/app_router.dart';
 
 Future<void> main() async {

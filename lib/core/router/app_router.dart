@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/auth/auth_token_provider.dart';
+import '../../features/auth_module/auth/auth_token_provider.dart';
 import '../../features/auth_module/presentation/signin_screen.dart';
 import '../../features/auth_module/presentation/signup_screen.dart';
 import '../../features/todo_module/presentations/home/home_screen.dart';
