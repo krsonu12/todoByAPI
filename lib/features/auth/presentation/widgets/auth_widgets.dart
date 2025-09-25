@@ -137,7 +137,6 @@ class AuthHighlights extends StatelessWidget {
                   };
                   return TableRow(
                     children: [
-                      
                       Center(
                         child: Container(
                           width: 28,
@@ -160,7 +159,8 @@ class AuthHighlights extends StatelessWidget {
                         child: Text(
                           label,
                           textAlign: TextAlign.left,
-                          style: TodoDesignSystem.bodySmall.copyWith(fontSize: 12,
+                          style: TodoDesignSystem.bodySmall.copyWith(
+                            fontSize: 12,
                             color: TodoDesignSystem.neutralGray700,
                           ),
                         ),
