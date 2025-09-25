@@ -35,6 +35,7 @@ class ModernDropdown<T> extends StatelessWidget {
         initialValue: value,
         items: items,
         onChanged: onChanged,
+        isExpanded: true,
         decoration: InputDecoration(
           labelText: label,
           prefixIcon: Icon(icon, size: 20),

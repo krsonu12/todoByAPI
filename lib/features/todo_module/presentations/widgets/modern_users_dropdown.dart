@@ -78,6 +78,7 @@ class ModernUsersDropdown extends ConsumerWidget {
         initialValue: initial,
         items: items,
         onChanged: onChanged,
+        isExpanded: true,
         decoration: const InputDecoration(
           labelText: 'Assignee',
           prefixIcon: Icon(Icons.person_rounded, size: 20),

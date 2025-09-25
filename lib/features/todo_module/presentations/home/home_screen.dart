@@ -259,7 +259,6 @@ class TodoTile extends ConsumerWidget {
                   return Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                  
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -268,8 +267,8 @@ class TodoTile extends ConsumerWidget {
                             AnimatedDefaultTextStyle(
                               duration: TodoDesignSystem.animationMedium,
                               style: TodoDesignSystem.bodyLarge.copyWith(
-                                color:  TodoDesignSystem.neutralGray900,
-                                decoration:  TextDecoration.none,
+                                color: TodoDesignSystem.neutralGray900,
+                                decoration: TextDecoration.none,
                                 fontWeight: FontWeight.w600,
                               ),
                               child: Text(
