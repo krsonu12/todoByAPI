@@ -2,14 +2,12 @@ import 'package:flutter/material.dart';
 
 import 'design_system.dart';
 
-/// Responsive breakpoints
 class Breakpoints {
   static const double mobile = 768;
   static const double tablet = 1200;
   static const double desktop = 1200;
 }
 
-/// Responsive spacing based on screen size
 class ResponsiveSpacing {
   static double getSpacing(
     BuildContext context, {
@@ -44,7 +42,6 @@ class ResponsiveSpacing {
   }
 }
 
-/// Responsive container with max width constraints
 class ResponsiveContainer extends StatelessWidget {
   const ResponsiveContainer({
     super.key,
@@ -76,7 +73,6 @@ class ResponsiveContainer extends StatelessWidget {
   }
 }
 
-/// Responsive modal bottom sheet
 class ResponsiveBottomSheet extends StatelessWidget {
   const ResponsiveBottomSheet({
     super.key,

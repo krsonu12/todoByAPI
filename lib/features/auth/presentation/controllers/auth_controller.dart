@@ -57,8 +57,6 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
   }
 }
 
-
-
 final authControllerProvider =
     StateNotifierProvider<AuthController, AsyncValue<void>>((ref) {
       return AuthController(ref: ref);

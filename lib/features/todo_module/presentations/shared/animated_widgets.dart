@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 
 import 'design_system.dart';
 
-/// Animated card with hover effects and smooth transitions
 class AnimatedTaskCard extends StatefulWidget {
   const AnimatedTaskCard({
     super.key,
@@ -116,7 +115,6 @@ class _AnimatedTaskCardState extends State<AnimatedTaskCard>
   }
 }
 
-/// Animated checkbox with smooth transitions
 class AnimatedTaskCheckbox extends StatefulWidget {
   const AnimatedTaskCheckbox({
     super.key,
@@ -214,7 +212,6 @@ class _AnimatedTaskCheckboxState extends State<AnimatedTaskCheckbox>
   }
 }
 
-/// Animated priority chip with color transitions
 class AnimatedPriorityChip extends StatefulWidget {
   const AnimatedPriorityChip({
     super.key,
@@ -312,7 +309,6 @@ class _AnimatedPriorityChipState extends State<AnimatedPriorityChip>
   }
 }
 
-/// Animated loading skeleton
 class AnimatedSkeleton extends StatefulWidget {
   const AnimatedSkeleton({
     super.key,
@@ -386,7 +382,6 @@ class _AnimatedSkeletonState extends State<AnimatedSkeleton>
   }
 }
 
-/// Animated slide transition for list items
 class AnimatedSlideItem extends StatefulWidget {
   const AnimatedSlideItem({
     super.key,
@@ -429,8 +424,6 @@ class _AnimatedSlideItemState extends State<AnimatedSlideItem>
         curve: TodoDesignSystem.curveDefault,
       ),
     );
-
-    // Staggered animation based on index
     final delay = widget.delay ?? Duration(milliseconds: 50 * widget.index);
     Future.delayed(delay, () {
       if (mounted) {
@@ -459,7 +452,6 @@ class _AnimatedSlideItemState extends State<AnimatedSlideItem>
   }
 }
 
-/// Animated floating action button with morphing effect
 class AnimatedMorphingFAB extends StatefulWidget {
   const AnimatedMorphingFAB({
     super.key,

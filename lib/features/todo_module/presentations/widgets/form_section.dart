@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../shared/design_system.dart';
 
-/// A form section widget with a title and child content
 class FormSection extends StatelessWidget {
   const FormSection({super.key, required this.title, required this.child});
 

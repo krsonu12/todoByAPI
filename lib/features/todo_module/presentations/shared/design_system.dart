@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Modern design system for the todo module
 class TodoDesignSystem {
-  // Colors
   static const Color primaryBlue = Color(0xFF2563EB);
   static const Color primaryBlueLight = Color(0xFF3B82F6);
   static const Color secondaryPurple = Color(0xFF7C3AED);
@@ -21,18 +19,12 @@ class TodoDesignSystem {
   static const Color neutralGray700 = Color(0xFF374151);
   static const Color neutralGray800 = Color(0xFF1F2937);
   static const Color neutralGray900 = Color(0xFF111827);
-
-  // Priority Colors
   static const Color priorityHigh = errorRed;
   static const Color priorityMedium = warningOrange;
   static const Color priorityLow = successGreen;
-
-  // Status Colors
   static const Color statusTodo = neutralGray400;
   static const Color statusInProgress = primaryBlue;
   static const Color statusDone = successGreen;
-
-  // Spacing
   static const double spacing2 = 2.0;
   static const double spacing4 = 4.0;
   static const double spacing8 = 8.0;
@@ -41,14 +33,10 @@ class TodoDesignSystem {
   static const double spacing20 = 20.0;
   static const double spacing24 = 24.0;
   static const double spacing32 = 32.0;
-
-  // Border Radius
   static const double radiusSmall = 8.0;
   static const double radiusMedium = 12.0;
   static const double radiusLarge = 16.0;
   static const double radiusXLarge = 24.0;
-
-  // Shadows
   static List<BoxShadow> get shadowSmall => [
     BoxShadow(
       color: Colors.black.withOpacity(0.05),
@@ -72,18 +60,12 @@ class TodoDesignSystem {
       offset: const Offset(0, 8),
     ),
   ];
-
-  // Animation Durations
   static const Duration animationFast = Duration(milliseconds: 150);
   static const Duration animationMedium = Duration(milliseconds: 300);
   static const Duration animationSlow = Duration(milliseconds: 500);
-
-  // Animation Curves
   static const Curve curveDefault = Curves.easeInOut;
   static const Curve curveSpring = Curves.elasticOut;
   static const Curve curveBounce = Curves.bounceOut;
-
-  // Typography
   static TextStyle get headingLarge => const TextStyle(
     fontSize: 32,
     fontWeight: FontWeight.bold,
@@ -118,8 +100,6 @@ class TodoDesignSystem {
 
   static TextStyle get labelSmall =>
       const TextStyle(fontSize: 10, fontWeight: FontWeight.w500, height: 1.4);
-
-  // Helper methods for priority colors
   static Color getPriorityColor(String priority) {
     switch (priority.toLowerCase()) {
       case 'high':
@@ -133,7 +113,6 @@ class TodoDesignSystem {
     }
   }
 
-  // Helper methods for status colors
   static Color getStatusColor(String status) {
     switch (status.toLowerCase()) {
       case 'todo':

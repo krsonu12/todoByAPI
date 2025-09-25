@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/users_repository.dart';
 import '../shared/design_system.dart';
 
-/// A modern users dropdown with avatar display
 class ModernUsersDropdown extends ConsumerWidget {
   const ModernUsersDropdown({
     super.key,

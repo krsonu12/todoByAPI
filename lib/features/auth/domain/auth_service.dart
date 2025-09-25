@@ -55,10 +55,11 @@ class AuthService {
       message: 'Token missing in login response',
     );
   }
+
   Future<void> logout() async {
     final Response<dynamic> response = await client.post(ApiPaths.logout);
     final dynamic data = response.data;
-      if (data is Map && data['message'] is String) {
+    if (data is Map && data['message'] is String) {
       return;
     }
   }

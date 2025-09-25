@@ -13,5 +13,3 @@ final todoRepositoryProvider = Provider<TodoRepository>((ref) {
 final taskExtrasDaoProvider = Provider<TaskExtrasDao>((ref) {
   return TaskExtrasDao();
 });
-
-// Removed controller and state providers; moved to presentations/todo_controller/todo_controller.dart

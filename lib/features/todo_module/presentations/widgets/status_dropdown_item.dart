@@ -3,12 +3,8 @@ import 'package:flutter/material.dart';
 import '../../data/local_db/task_extras.dart';
 import '../shared/design_system.dart';
 
-/// Dropdown menu item for task status selection
 class StatusDropdownItem extends StatelessWidget {
-  const StatusDropdownItem({
-    super.key,
-    required this.status,
-  });
+  const StatusDropdownItem({super.key, required this.status});
 
   final TaskStatus status;
 

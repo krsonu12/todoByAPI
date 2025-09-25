@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 
 import '../shared/design_system.dart';
 
-/// A modern date picker field with enhanced styling
 class ModernDateField extends StatelessWidget {
   const ModernDateField({super.key, required this.value, required this.onPick});
 

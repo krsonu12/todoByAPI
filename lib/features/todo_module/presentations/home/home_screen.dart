@@ -134,7 +134,6 @@ class HomeScreen extends ConsumerWidget {
       child: TaskEditSheet(prefetchedUsers: users),
     );
     if (result != null && result.title.isNotEmpty) {
-      // Create the todo with a temporary ID
       final tempId = DateTime.now().millisecondsSinceEpoch * -1;
       final todo = TodoModel(
         id: tempId,
@@ -142,8 +141,6 @@ class HomeScreen extends ConsumerWidget {
         title: result.title,
         completed: false,
       );
-
-      // Save extras first with the temp ID
       await ref
           .read(taskExtrasDaoProvider)
           .upsert(
@@ -157,8 +154,6 @@ class HomeScreen extends ConsumerWidget {
               assignedUserName: result.assignedUserName,
             ),
           );
-
-      // Add the todo (this will handle local storage and API sync)
       await ref.read(todoControllerProvider.notifier).addTodo(todo);
 
       if (context.mounted) {
@@ -249,7 +244,6 @@ class TodoTile extends ConsumerWidget {
           onTap: () => _editTask(context, ref, todo),
           child: Consumer(
             builder: (context, ref, child) {
-              // Watch for changes in the todo controller to trigger rebuilds
               ref.watch(todoControllerProvider);
 
               return FutureBuilder(
@@ -263,7 +257,6 @@ class TodoTile extends ConsumerWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Title
                             AnimatedDefaultTextStyle(
                               duration: TodoDesignSystem.animationMedium,
                               style: TodoDesignSystem.bodyLarge.copyWith(
@@ -277,7 +270,6 @@ class TodoTile extends ConsumerWidget {
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            // Description
                             if (extras?.description.isNotEmpty == true) ...[
                               const SizedBox(height: TodoDesignSystem.spacing4),
                               Text(
@@ -289,7 +281,6 @@ class TodoTile extends ConsumerWidget {
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ],
-                            // Chips
                             if (extras != null) ...[
                               const SizedBox(height: TodoDesignSystem.spacing8),
                               Wrap(
@@ -325,7 +316,6 @@ class TodoTile extends ConsumerWidget {
                           ],
                         ),
                       ),
-                      // Delete Button
                       Container(
                         margin: const EdgeInsets.only(
                           left: TodoDesignSystem.spacing8,
@@ -381,8 +371,6 @@ class TodoTile extends ConsumerWidget {
   ) async {
     HapticFeedback.lightImpact();
     final users = await ref.read(usersRepositoryProvider).getUsers();
-
-    // Get current extras to pre-populate the form
     final extras = await ref.read(taskExtrasDaoProvider).findByTaskId(id);
     final assignedUser = extras?.assignedUserId != null
         ? users.firstWhere(
@@ -410,9 +398,6 @@ class TodoTile extends ConsumerWidget {
       ),
     );
     if (result != null) {
-      // Always update the todo in the controller to trigger UI refresh
-
-      // Update extras first
       await ref
           .read(taskExtrasDaoProvider)
           .upsert(
@@ -426,8 +411,6 @@ class TodoTile extends ConsumerWidget {
               assignedUserName: result.assignedUserName,
             ),
           );
-
-      // Always update the todo to trigger UI refresh, even if just extras changed
       ref
           .read(todoControllerProvider.notifier)
           .updateTodo(
@@ -514,7 +497,6 @@ String _labelStatus(TaskStatus s) => {
   TaskStatus.done: 'Done',
 }[s]!;
 
-// New State Widgets
 class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -680,9 +662,7 @@ class _ErrorState extends StatelessWidget {
             ),
             const SizedBox(height: TodoDesignSystem.spacing16),
             ElevatedButton.icon(
-              onPressed: () {
-                // Trigger refresh
-              },
+              onPressed: () {},
               icon: const Icon(Icons.refresh_rounded),
               label: const Text('Try Again'),
             ),

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../data/local_db/task_extras.dart';
 import '../shared/design_system.dart';
 
-/// Dropdown menu item for task priority selection
 class PriorityDropdownItem extends StatelessWidget {
   const PriorityDropdownItem({super.key, required this.priority});
 

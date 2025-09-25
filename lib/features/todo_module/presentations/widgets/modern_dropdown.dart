@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../shared/design_system.dart';
 
-/// A modern dropdown field with enhanced styling
 class ModernDropdown<T> extends StatelessWidget {
   const ModernDropdown({
     super.key,

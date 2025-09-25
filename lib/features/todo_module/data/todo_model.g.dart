@@ -1,10 +1,4 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
-
 part of 'todo_model.dart';
-
-// **************************************************************************
-// JsonSerializableGenerator
-// **************************************************************************
 
 _$TodoModelImpl _$$TodoModelImplFromJson(Map<String, dynamic> json) =>
     _$TodoModelImpl(

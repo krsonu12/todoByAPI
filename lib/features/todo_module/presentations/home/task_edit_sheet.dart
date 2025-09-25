@@ -98,7 +98,6 @@ class _TaskEditSheetState extends ConsumerState<TaskEditSheet> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Header with drag handle
                     Column(
                       children: [
                         Container(
@@ -170,7 +169,6 @@ class _TaskEditSheetState extends ConsumerState<TaskEditSheet> {
                       ],
                     ),
                     const SizedBox(height: TodoDesignSystem.spacing24),
-                    // Title Field
                     FormSection(
                       title: 'Task Details',
                       child: Column(
@@ -209,7 +207,6 @@ class _TaskEditSheetState extends ConsumerState<TaskEditSheet> {
                       ),
                     ),
                     const SizedBox(height: TodoDesignSystem.spacing20),
-                    // Task Properties
                     FormSection(
                       title: 'Task Properties',
                       child: Column(
@@ -280,7 +277,6 @@ class _TaskEditSheetState extends ConsumerState<TaskEditSheet> {
                       ),
                     ),
                     const SizedBox(height: TodoDesignSystem.spacing32),
-                    // Action Buttons
                     Row(
                       children: [
                         Expanded(
