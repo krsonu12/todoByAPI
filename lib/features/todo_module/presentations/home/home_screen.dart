@@ -205,69 +205,15 @@ class TodoTile extends ConsumerWidget {
     return asyncItem.when(
       data: (todo) {
         if (todo == null) return const SizedBox.shrink();
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeInOut,
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
+        return Card(
+          key: ValueKey<int>(id),
+          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
           ),
-          child: ListTile(
-            key: ValueKey<int>(id),
-            title: Text(todo.title),
-            subtitle: FutureBuilder(
-              future: ref.read(taskExtrasDaoProvider).findByTaskId(id),
-              builder: (context, snap) {
-                final extras = snap.data;
-                if (extras == null) return const SizedBox.shrink();
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (extras.description.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4.0, bottom: 6.0),
-                        child: Text(
-                          extras.description,
-                          style: Theme.of(context).textTheme.bodySmall,
-                          maxLines: 3,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    Wrap(
-                      spacing: 6,
-                      runSpacing: -8,
-                      children: [
-                        if (extras.dueDate != null)
-                          _Chip(
-                            icon: Icons.event,
-                            label: _fmtDate(extras.dueDate!),
-                          ),
-                        _Chip(
-                          icon: Icons.flag,
-                          label: _labelPriority(extras.priority),
-                        ),
-                        _Chip(
-                          icon: Icons.work,
-                          label: _labelStatus(extras.status),
-                        ),
-                        if (extras.assignedUserName != null)
-                          _Chip(
-                            icon: Icons.person,
-                            label: extras.assignedUserName!,
-                          ),
-                      ],
-                    ),
-                  ],
-                );
-              },
-            ),
-            leading: Checkbox(
-              value: todo.completed,
-              onChanged: (val) {
-                ref
-                    .read(todoControllerProvider.notifier)
-                    .updateTodo(id, todo.copyWith(completed: val ?? false));
-              },
-            ),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
             onTap: () async {
               final users = await ref.read(usersRepositoryProvider).getUsers();
               final result = await showModalBottomSheet<TaskFormResult>(
@@ -299,11 +245,88 @@ class TodoTile extends ConsumerWidget {
                     );
               }
             },
-            trailing: IconButton(
-              icon: const Icon(Icons.delete, color: Colors.red),
-              onPressed: () {
-                ref.read(todoControllerProvider.notifier).deleteTodo(id);
-              },
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(12, 8, 8, 12),
+              child: FutureBuilder(
+                future: ref.read(taskExtrasDaoProvider).findByTaskId(id),
+                builder: (context, snap) {
+                  final extras = snap.data;
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  todo.title,
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.titleMedium,
+                                ),
+                                if (extras != null &&
+                                    extras.description.isNotEmpty)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 4.0),
+                                    child: Text(
+                                      extras.description,
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.bodySmall,
+                                      maxLines: 3,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            onPressed: () {
+                              ref
+                                  .read(todoControllerProvider.notifier)
+                                  .deleteTodo(id);
+                            },
+                          ),
+                        ],
+                      ),
+                      if (extras != null)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8, top: 8),
+                          child: Wrap(
+                            spacing: 8,
+                            runSpacing: -6,
+                            children: [
+                              if (extras.dueDate != null)
+                                _Chip(
+                                  icon: Icons.event,
+                                  label: _fmtDate(extras.dueDate!),
+                                ),
+                              _Chip(
+                                icon: Icons.flag,
+                                label: _labelPriority(extras.priority),
+                              ),
+                              _Chip(
+                                icon: Icons.work,
+                                label: _labelStatus(extras.status),
+                              ),
+
+                              if (extras.assignedUserName != null)
+                                _Chip(
+                                  icon: Icons.person,
+                                  label: extras.assignedUserName!,
+                                ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  );
+                },
+              ),
             ),
           ),
         );
