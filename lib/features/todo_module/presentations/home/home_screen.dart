@@ -107,7 +107,11 @@ class HomeScreen extends ConsumerWidget {
                                 .read(todoControllerProvider.notifier)
                                 .deleteTodo(itemId);
                           },
-                          child: TodoTile(id: itemId, initialTitle: t.title),
+                          child: TodoTile(
+                            id: itemId,
+                            initialTitle: t.title,
+                            order: index + 1,
+                          ),
                         ),
                       ),
                     );
@@ -219,10 +223,11 @@ class HomeScreen extends ConsumerWidget {
 }
 
 class TodoTile extends ConsumerWidget {
-  const TodoTile({super.key, required this.id, this.initialTitle});
+  const TodoTile({super.key, required this.id, this.initialTitle, this.order});
 
   final int id;
   final String? initialTitle;
+  final int? order;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -253,6 +258,33 @@ class TodoTile extends ConsumerWidget {
                   return Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      if (order != null)
+                        Container(
+                          width: 28,
+                          height: 28,
+                          alignment: Alignment.center,
+                          margin: const EdgeInsets.only(
+                            right: TodoDesignSystem.spacing8,
+                            top: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: TodoDesignSystem.neutralGray300,
+                            borderRadius: BorderRadius.circular(
+                              TodoDesignSystem.radiusSmall,
+                            ),
+                            border: Border.all(
+                              color: TodoDesignSystem.neutralGray200,
+                              width: 1,
+                            ),
+                          ),
+                          child: Text(
+                            '$order',
+                            style: TodoDesignSystem.labelSmall.copyWith(
+                              color: TodoDesignSystem.neutralGray700,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,

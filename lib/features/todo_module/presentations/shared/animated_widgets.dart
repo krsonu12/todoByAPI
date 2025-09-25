@@ -86,7 +86,17 @@ class _AnimatedTaskCardState extends State<AnimatedTaskCard>
           scale: _scaleAnimation.value,
           child: Container(
             margin: widget.margin,
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: TodoDesignSystem.neutralGray300,
+                width: 1,
+              ),
+              borderRadius:
+                  widget.borderRadius ??
+                  BorderRadius.circular(TodoDesignSystem.radiusMedium),
+            ),
             child: Material(
+              color: Colors.transparent,
               elevation: _elevationAnimation.value,
               borderRadius:
                   widget.borderRadius ??
