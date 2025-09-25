@@ -100,7 +100,8 @@ class HomeScreen extends ConsumerWidget {
                           key: ValueKey<int>(itemId),
                           direction: DismissDirection.endToStart,
                           background: _DismissBackground(),
-                          confirmDismiss: (_) => _showDeleteDialog(context, t),
+                          confirmDismiss: (_) =>
+                              _showDeleteDialog(context, t.title),
                           onDismissed: (_) {
                             HapticFeedback.mediumImpact();
                             ref
@@ -179,47 +180,47 @@ class HomeScreen extends ConsumerWidget {
       }
     }
   }
+}
 
-  Future<bool?> _showDeleteDialog(BuildContext context, TodoModel todo) async {
-    return showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(TodoDesignSystem.radiusLarge),
-        ),
-        title: Text('Delete Task?', style: TodoDesignSystem.headingSmall),
-        content: Text(
-          'Are you sure you want to delete "${todo.title}"? This action cannot be undone.',
-          style: TodoDesignSystem.bodyMedium,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(
-              'Cancel',
-              style: TodoDesignSystem.labelLarge.copyWith(
-                color: TodoDesignSystem.neutralGray600,
-              ),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              HapticFeedback.lightImpact();
-              Navigator.pop(context, true);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: TodoDesignSystem.errorRed,
-              foregroundColor: Colors.white,
-            ),
-            child: Text(
-              'Delete',
-              style: TodoDesignSystem.labelLarge.copyWith(color: Colors.white),
-            ),
-          ),
-        ],
+Future<bool?> _showDeleteDialog(BuildContext context, String title) async {
+  return showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(TodoDesignSystem.radiusLarge),
       ),
-    );
-  }
+      title: Text('Delete Task?', style: TodoDesignSystem.headingSmall),
+      content: Text(
+        'Are you sure you want to delete "$title"? This action cannot be undone.',
+        style: TodoDesignSystem.bodyMedium,
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: Text(
+            'Cancel',
+            style: TodoDesignSystem.labelLarge.copyWith(
+              color: TodoDesignSystem.neutralGray600,
+            ),
+          ),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            HapticFeedback.lightImpact();
+            Navigator.pop(context, true);
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: TodoDesignSystem.errorRed,
+            foregroundColor: Colors.white,
+          ),
+          child: Text(
+            'Delete',
+            style: TodoDesignSystem.labelLarge.copyWith(color: Colors.white),
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 class TodoTile extends ConsumerWidget {
@@ -363,7 +364,10 @@ class TodoTile extends ConsumerWidget {
                         child: IconButton(
                           onPressed: () async {
                             HapticFeedback.lightImpact();
-                            final confirmed = await _confirmDelete(context);
+                            final confirmed = await _showDeleteDialog(
+                              context,
+                              todo.title,
+                            );
                             if (confirmed == true) {
                               ref
                                   .read(todoControllerProvider.notifier)
@@ -483,47 +487,6 @@ class TodoTile extends ConsumerWidget {
       case TaskStatus.done:
         return Icons.check_circle_rounded;
     }
-  }
-
-  Future<bool?> _confirmDelete(BuildContext context) async {
-    return showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(TodoDesignSystem.radiusLarge),
-        ),
-        title: Text('Delete Task?', style: TodoDesignSystem.headingSmall),
-        content: Text(
-          'Are you sure you want to delete this task?',
-          style: TodoDesignSystem.bodyMedium,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(
-              'Cancel',
-              style: TodoDesignSystem.labelLarge.copyWith(
-                color: TodoDesignSystem.neutralGray600,
-              ),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              HapticFeedback.lightImpact();
-              Navigator.pop(context, true);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: TodoDesignSystem.errorRed,
-              foregroundColor: Colors.white,
-            ),
-            child: Text(
-              'Delete',
-              style: TodoDesignSystem.labelLarge.copyWith(color: Colors.white),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
 
