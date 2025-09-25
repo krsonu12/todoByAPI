@@ -114,34 +114,42 @@ class AuthHighlights extends StatelessWidget {
       (Icons.people_alt_rounded, 'Assign and collaborate'),
     ];
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.start,
       children: [
         const SizedBox(height: TodoDesignSystem.spacing16),
-        ...items.map(
-          (it) => Padding(
+        ...items.asMap().entries.map((entry) {
+          final idx = entry.key;
+          final (iconData, label) = entry.value;
+          final Color iconColor = switch (idx) {
+            0 => TodoDesignSystem.successGreen,
+            1 => TodoDesignSystem.warningOrange,
+            _ => TodoDesignSystem.secondaryPurple,
+          };
+
+          return Padding(
             padding: const EdgeInsets.only(bottom: TodoDesignSystem.spacing8),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Container(
                   width: 28,
                   height: 28,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: TodoDesignSystem.neutralGray100,
+                    color: iconColor.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(
                       TodoDesignSystem.radiusSmall,
                     ),
                   ),
-                  child: Icon(
-                    it.$1,
-                    size: 16,
-                    color: TodoDesignSystem.neutralGray700,
-                  ),
+                  child: Icon(iconData, size: 16, color: iconColor),
                 ),
                 const SizedBox(width: TodoDesignSystem.spacing8),
-                Expanded(
+                Flexible(
                   child: Text(
-                    it.$2,
+                    label,
+                    textAlign: TextAlign.center,
                     style: TodoDesignSystem.bodySmall.copyWith(
                       color: TodoDesignSystem.neutralGray700,
                     ),
@@ -149,8 +157,8 @@ class AuthHighlights extends StatelessWidget {
                 ),
               ],
             ),
-          ),
-        ),
+          );
+        }),
       ],
     );
   }

@@ -44,7 +44,6 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                
                 const AuthBrandHeader(),
                 const SizedBox(height: TodoDesignSystem.spacing12),
                 const AuthHighlights(),
@@ -151,7 +150,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                   ),
                           ),
                         ),
-                    if (state is AsyncError)
+                        if (state is AsyncError)
                           Text(
                             state.error.toString(),
                             style: TodoDesignSystem.bodySmall.copyWith(
