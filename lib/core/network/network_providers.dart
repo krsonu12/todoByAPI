@@ -10,9 +10,6 @@ final networkClientProvider = Provider<NetworkClient>((ref) {
   return NetworkClient(getToken: getToken, onLogout: onLogout);
 });
 
-final authenticatedDioProvider = Provider<Dio>((ref) {
-  return ref.watch(networkClientProvider).authenticatedClient;
-});
 
 final unauthenticatedDioProvider = Provider<Dio>((ref) {
   return ref.watch(networkClientProvider).unauthenticatedClient;

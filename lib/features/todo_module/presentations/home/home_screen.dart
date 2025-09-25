@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../auth/presentation/controllers/auth_controller.dart';
+import '../../../auth_module/presentation/controllers/auth_controller.dart';
 import '../../../todo_module/data/todo_model.dart';
 import '../../../todo_module/presentations/todo_controller/todo_controller.dart';
 import '../../data/local_db/task_extras.dart';

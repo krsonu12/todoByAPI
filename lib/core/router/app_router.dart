@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/auth/auth_token_provider.dart';
-import '../../features/auth/presentation/signin_screen.dart';
-import '../../features/auth/presentation/signup_screen.dart';
+import '../../features/auth_module/presentation/signin_screen.dart';
+import '../../features/auth_module/presentation/signup_screen.dart';
 import '../../features/todo_module/presentations/home/home_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
